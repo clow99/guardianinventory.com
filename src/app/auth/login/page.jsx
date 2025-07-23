@@ -153,7 +153,9 @@ export default function LoginPage() {
                         transition-all duration-150 cursor-pointer
                     "
                     aria-label="Sign in with Google"
-                    onClick={() => signIn("google", { callbackUrl: "/home" })}
+                    onClick={() =>
+                        signIn("google", { callbackUrl: "/app/dashboard" })
+                    }
                 >
                     <span className="h-6 w-6 flex items-center justify-center">
                         <svg width="24" height="24" viewBox="0 0 48 48">
