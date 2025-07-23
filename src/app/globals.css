@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+/* For modern browsers */
+::-webkit-scrollbar {
+    width: 12px;
+    background: #27272a; /* Tailwind bg-neutral-800 */
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3f3f46; /* Slightly lighter (neutral-700) */
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #52525b; /* Even lighter on hover (neutral-600) */
+}
+
+::-webkit-scrollbar-corner {
+    background: #27272a;
+}
+
+/* For Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #3f3f46 #27272a;
+}
+
+/* react-datepicker dark mode with #262626 and highlight #f97316 (orange-500) */
+
+.react-datepicker__tab-loop,
+.react-datepicker,
+.react-datepicker__header,
+.react-datepicker__day,
+.react-datepicker__day-name,
+.react-datepicker__time-container,
+.react-datepicker__time,
+.react-datepicker__time-box {
+    background-color: #262626 !important;
+    color: #f3f4f6 !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker-time__header,
+.react-datepicker-year-header {
+    color: #f3f4f6 !important;
+}
+
+/* Highlight selected and keyboard-selected dates with #f97316 */
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+    background-color: #f97316 !important;
+    color: #fff !important;
+}
+
+/* Today’s date gets a border and text accent for visibility */
+.react-datepicker__day--today {
+    border-color: #fbbf24 !important; /* Amber border */
+    color: #fde68a !important; /* Amber text */
+}
+
+.react-datepicker__day:hover {
+    background-color: #404040 !important; /* Slightly lighter on hover */
+    color: #fff !important;
+}
+
+.react-datepicker__triangle {
+    border-bottom-color: #262626 !important;
+}
+
+.react-datepicker__input-container input {
+    background: #262626 !important;
+    color: #f3f4f6 !important;
+    border: 1px solid #404040 !important;
+}
+
+.react-datepicker__header {
+    border-bottom: 1px solid #404040 !important;
+}
+
+.react-datepicker__day--disabled,
+.react-datepicker__day--outside-month {
+    color: #6b7280 !important;
+}
