@@ -8,6 +8,7 @@ import MenuSelectBtns from "@/components/header/MenuSelectBtns";
 import DashboardMenu from "@/components/menus/DashboardMenu";
 import InventoryMenu from "@/components/menus/InventoryMenu";
 import SearchBar from "@/components/header/SearchBar";
+import SettingsMenu from "@/components/menus/SettingsMenu";
 
 import {
     House,
@@ -36,6 +37,8 @@ export default async function RootLayout({ children }) {
                 return <></>; // Placeholder for inspections menu
             case "repairs":
                 return <></>;
+            case "settings":
+                return <SettingsMenu />;
             default:
                 return <></>;
         }
@@ -47,36 +50,7 @@ export default async function RootLayout({ children }) {
                 <div className="h-12 shrink-0 border-b border-neutral-700 flex items-center justify-center">
                     <img src="/guardianLogo.png" className="h-11 w-11" alt="" />
                 </div>
-                <div className="px-1 py-2 flex flex-col gap-1 h-full">
-                    <MenuSelectBtns initialSelection={selectedSection} />
-                    <button
-                        className={`relative group mt-auto w-10 h-10 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition`}
-                        type="button"
-                        title="Settings"
-                    >
-                        <Settings
-                            className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200`}
-                        />
-                    </button>
-                    <button
-                        className={`relative group w-10 h-10 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition`}
-                        type="button"
-                        title="Profile"
-                    >
-                        <CircleUser
-                            className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200`}
-                        />
-                    </button>
-                    <button
-                        className={`relative group w-10 h-10 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition`}
-                        type="button"
-                        title="Logout"
-                    >
-                        <LogOut
-                            className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200`}
-                        />
-                    </button>
-                </div>
+                <MenuSelectBtns initialSelection={selectedSection} />
             </div>
             <div className="w-[250px] h-screen shrink-0 bg-neutral-800 border-r border-neutral-700 flex flex-col">
                 <div className="h-12 border-b border-neutral-700 flex items-center px-3">

@@ -12,8 +12,12 @@ import {
     House,
     Layers,
     ChartNoAxesCombined,
+    Settings,
+    CircleUser,
+    LogOut,
 } from "lucide-react";
 import Link from "next/link";
+import Tooltip from "../misc/Tooltip";
 
 // Your options array
 const options = [
@@ -72,30 +76,86 @@ export default function MenuSelectBtns({ initialSelection }) {
     };
 
     return (
-        <div className="flex flex-col gap-1">
-            {options.map((opt) => {
-                const Icon = opt.icon;
-                const isSelected = selected === opt.id;
-                return (
-                    <div
-                        key={opt.id}
-                        onClick={() => handleSelect(opt.id)}
-                        title={opt.label}
-                        type="button"
-                    >
-                        <Link
-                            className={`relative group w-10 h-10 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition
-                        ${isSelected ? "bg-neutral-700" : "bg-transparent"}`}
-                            href={opt.href}
+        <div className="px-1 py-2 flex flex-col gap-1 h-full">
+            <div className="flex flex-col gap-1">
+                {options.map((opt) => {
+                    const Icon = opt.icon;
+                    const isSelected = selected === opt.id;
+                    return (
+                        <div
+                            key={opt.id}
+                            onClick={() => handleSelect(opt.id)}
+                            title={opt.label}
+                            type="button"
                         >
-                            <Icon
-                                className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200
+                            <Link
+                                className={`relative group w-10 h-10 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition
+                        ${isSelected ? "bg-neutral-700" : "bg-transparent"}`}
+                                href={opt.href}
+                            >
+                                <Icon
+                                    className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200
                             ${isSelected ? "text-orange-500" : ""}`}
-                            />
-                        </Link>
-                    </div>
-                );
-            })}
+                                />
+                            </Link>
+                        </div>
+                    );
+                })}
+            </div>
+            <div
+                onClick={() => handleSelect("settings")}
+                title="Settings"
+                type="button"
+                className="mt-auto"
+            >
+                <Link
+                    className={`relative group w-10 h-10 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition
+                        ${
+                            selected === "settings"
+                                ? "bg-neutral-700"
+                                : "bg-transparent"
+                        }`}
+                    href="/app/settings/general"
+                >
+                    <Settings
+                        className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200
+                            ${
+                                selected === "settings" ? "text-orange-500" : ""
+                            }`}
+                    />
+                </Link>
+            </div>
+            <div
+                onClick={() => handleSelect("profile")}
+                title="Profile"
+                type="button"
+                className=""
+            >
+                <Link
+                    className={`relative group w-10 h-10 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition
+                        ${
+                            selected === "profile"
+                                ? "bg-neutral-700"
+                                : "bg-transparent"
+                        }`}
+                    href="/app/profile"
+                >
+                    <CircleUser
+                        className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200
+                            ${selected === "profile" ? "text-orange-500" : ""}`}
+                    />
+                </Link>
+            </div>
+
+            <button
+                className={`relative group w-10 h-10 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition`}
+                type="button"
+                title="Logout"
+            >
+                <LogOut
+                    className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200`}
+                />
+            </button>
         </div>
     );
 }

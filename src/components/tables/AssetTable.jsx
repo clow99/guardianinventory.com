@@ -115,7 +115,7 @@ const columns = [
         header: ({ column }) => (
             <SortableHeader column={column} label="Description" />
         ),
-        enableSorting: false,
+        enableSorting: true,
         cell: (info) => (
             <span className="truncate block max-w-[250px]">
                 {info.getValue()}
@@ -163,7 +163,7 @@ const columns = [
 export default function AssetTable() {
     const [sorting, setSorting] = useState([]);
     const [pageIndex, setPageIndex] = useState(0);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(15);
     const [expanded, setExpanded] = useState({});
 
     const table = useReactTable({
@@ -193,7 +193,7 @@ export default function AssetTable() {
             <h2 className="text-xl font-bold mb-4 text-white">
                 Product Assets
             </h2>
-            <div className="overflow-x-auto rounded-lg border border-neutral-700 max-h-[700px] overflow-y-auto">
+            <div className="overflow-x-auto rounded-lg border border-neutral-700 max-h-[657px] overflow-y-auto">
                 <table className="min-w-full border-separate border-spacing-0">
                     <thead className="bg-neutral-800 sticky top-0 z-10">
                         <tr>
