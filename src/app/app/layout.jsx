@@ -7,8 +7,9 @@ import MenuSelectBtns from "@/components/header/MenuSelectBtns";
 //menus
 import DashboardMenu from "@/components/menus/DashboardMenu";
 import InventoryMenu from "@/components/menus/InventoryMenu";
-import SearchBar from "@/components/header/SearchBar";
+import SearchBarDropdown from "@/components/header/SearchBarDropdown";
 import SettingsMenu from "@/components/menus/SettingsMenu";
+import CalendarMenu from "@/components/menus/CalendarMenu";
 
 import {
     House,
@@ -25,7 +26,7 @@ export default async function RootLayout({ children }) {
 
     const cookieStore = await cookies();
     const selectedSection =
-        cookieStore.get("selectedSection")?.value ?? "tasks";
+        cookieStore.get("selectedSection")?.value ?? "dashboard";
 
     const renderSidebar = () => {
         switch (selectedSection) {
@@ -33,6 +34,8 @@ export default async function RootLayout({ children }) {
                 return <DashboardMenu />;
             case "inventory":
                 return <InventoryMenu />;
+            case "calendar":
+                return <CalendarMenu />;
             case "inspections":
                 return <></>; // Placeholder for inspections menu
             case "repairs":
@@ -46,11 +49,13 @@ export default async function RootLayout({ children }) {
 
     return (
         <body className={`antialiased flex flex-row h-screen w-screen`}>
-            <div className="w-[50px] h-screen overflow-auto shrink-0 bg-neutral-800 border-r border-neutral-700 flex flex-col">
+            <div className="w-[50px] h-screen shrink-0 bg-neutral-800 border-r border-neutral-700 flex flex-col">
                 <div className="h-12 shrink-0 border-b border-neutral-700 flex items-center justify-center">
                     <img src="/guardianLogo.png" className="h-11 w-11" alt="" />
                 </div>
-                <MenuSelectBtns initialSelection={selectedSection} />
+                <div className="flex-1 overflow-y-auto thin-scrollbar">
+                    <MenuSelectBtns initialSelection={selectedSection} />
+                </div>
             </div>
             <div className="w-[250px] h-screen shrink-0 bg-neutral-800 border-r border-neutral-700 flex flex-col">
                 <div className="h-12 border-b border-neutral-700 flex items-center px-3">
@@ -78,10 +83,13 @@ export default async function RootLayout({ children }) {
                             Unlock advanced features and support by upgrading to
                             Pro.
                         </div>
-                        <button className="mt-2 bg-orange-500 text-white rounded px-4 py-2 text-sm hover:bg-orange-600 transition">
+                        <button className="mt-2 bg-orange-500/60 text-white rounded px-4 py-2 text-sm hover:bg-orange-500 transition">
                             Upgrade Now
                         </button>
-                        <button className="absolute top-2 right-2 cursor-pointer text-neutral-500 hover:text-neutral-300">
+                        <button
+                            aria-label="Close Upgrade Banner"
+                            className="absolute top-2 right-2 cursor-pointer text-neutral-500 hover:text-neutral-300"
+                        >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 className="h-5 w-5"
@@ -104,7 +112,7 @@ export default async function RootLayout({ children }) {
             <div className="flex flex-col w-full">
                 <div className="h-12 w-full shrink-0 border-b border-neutral-700 bg-neutral-800">
                     <div className="flex items-center h-full">
-                        <SearchBar />
+                        <SearchBarDropdown />
                     </div>
                 </div>
                 <div className="w-full h-full overflow-y-auto p-4 bg-neutral-800">

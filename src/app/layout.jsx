@@ -1,6 +1,13 @@
-// app/layout.js (Server Component)
+// app/layout.js
 import "./globals.css";
 
 export default function RootLayout({ children }) {
-    return <html lang="en">{children}</html>;
+    return (
+        <html lang="en">
+            <head>
+                <title>Guardian Inventory</title>
+            </head>
+            <body>{children}</body>
+        </html>
+    );
 }

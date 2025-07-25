@@ -1,8 +1,10 @@
-export default function SettingsPage() {
+import NotificationForm from "@/components/forms/NotificationForm";
+import { cookies } from "next/headers";
+
+export default function NotificationPage() {
     return (
         <div>
-            <h1>Settings</h1>
-            <p>This is the settings page.</p>
+            <NotificationForm />
         </div>
     );
 }

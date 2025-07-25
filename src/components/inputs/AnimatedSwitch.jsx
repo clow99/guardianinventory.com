@@ -27,7 +27,7 @@ export default function AnimatedSwitch({
     return (
         <label
             htmlFor={id}
-            className={`flex items-center gap-3 cursor-pointer select-none ${className}`}
+            className={`flex items-center gap-3 w-fit cursor-pointer select-none ${className}`}
         >
             <span className="relative inline-flex items-center">
                 <input
@@ -40,7 +40,7 @@ export default function AnimatedSwitch({
                 />
                 <motion.span
                     className={`
-            w-10 h-6 flex items-center rounded-full px-1 border
+            w-14 h-7 flex items-center rounded-full px-1 border
             transition-colors
             ${
                 isOn
@@ -57,13 +57,13 @@ export default function AnimatedSwitch({
                     transition={{ type: "spring", stiffness: 380, damping: 32 }}
                 >
                     <motion.span
-                        className={`w-4 h-4 rounded-full shadow
+                        className={`w-5 h-5 rounded-full shadow
               ${isOn ? "bg-orange-400" : "bg-neutral-400"}
             `}
                         layout
                         initial={false}
                         animate={{
-                            x: isOn ? 16 : 0,
+                            x: isOn ? 26 : 0,
                             backgroundColor: isOn ? "#f97316" : "#a3a3a3",
                         }}
                         transition={{

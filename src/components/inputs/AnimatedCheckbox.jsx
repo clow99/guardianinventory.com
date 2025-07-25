@@ -9,10 +9,13 @@ export default function AnimatedCheckbox({
     checked,
     onChange,
     className = "",
+    defaultChecked, // Take it as a real prop
     ...rest
 }) {
-    const [internalChecked, setInternalChecked] = useState(false);
     const isControlled = typeof checked === "boolean";
+    const [internalChecked, setInternalChecked] = useState(
+        () => defaultChecked ?? false
+    );
     const isChecked = isControlled ? checked : internalChecked;
 
     function handleChange(e) {
@@ -34,18 +37,20 @@ export default function AnimatedCheckbox({
                 <input
                     id={id}
                     type="checkbox"
-                    checked={isChecked}
                     onChange={handleChange}
                     className="absolute left-0 top-0 w-5 h-5 opacity-0 cursor-pointer m-0"
+                    {...(isControlled
+                        ? { checked: isChecked }
+                        : { defaultChecked: internalChecked })}
                     {...rest}
                 />
-                {/* Main neutral box background */}
+
                 <span
                     className={`
-            w-5 h-5 flex items-center justify-center rounded border transition
-            border-neutral-700 bg-neutral-800
-            overflow-hidden
-          `}
+                        w-5 h-5 flex items-center justify-center rounded border transition
+                        border-neutral-700 bg-neutral-800
+                        overflow-hidden
+                    `}
                     style={{ boxSizing: "border-box" }}
                 >
                     {/* Animated border SVG */}

@@ -15,6 +15,7 @@ import {
     Settings,
     CircleUser,
     LogOut,
+    Calendar,
 } from "lucide-react";
 import Link from "next/link";
 import Tooltip from "../misc/Tooltip";
@@ -32,6 +33,12 @@ const options = [
         icon: Package,
         label: "Inventory",
         href: "/app/inventory",
+    },
+    {
+        id: "calendar",
+        icon: Calendar,
+        label: "Calendar",
+        href: "/app/calendar?date=" + new Date().toISOString().split("T")[0],
     },
     {
         id: "layers",
@@ -148,7 +155,7 @@ export default function MenuSelectBtns({ initialSelection }) {
             </div>
 
             <button
-                className={`relative group w-10 h-10 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition`}
+                className={`relative group w-10 h-10 shrink-0 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition`}
                 type="button"
                 title="Logout"
             >
@@ -156,6 +163,7 @@ export default function MenuSelectBtns({ initialSelection }) {
                     className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200`}
                 />
             </button>
+            <div className="h-[10px] shrink-0 w-full"></div>
         </div>
     );
 }

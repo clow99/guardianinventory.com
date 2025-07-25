@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+.thin-scrollbar {
+    scrollbar-width: none;
+}
+
 /* For modern browsers */
 ::-webkit-scrollbar {
     width: 12px;
