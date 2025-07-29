@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import AnimatedCheckbox from "../inputs/AnimatedCheckbox";
 
 const users = [
     { id: 1, name: "User 1" },
@@ -106,20 +107,19 @@ export default function UserMultiSelect() {
                                 .map((user) => (
                                     <div
                                         key={user.id}
-                                        className="pl-5 py-1.5 hover:bg-neutral-700 cursor-pointer flex items-center gap-2"
+                                        className="pl-3 hover:bg-neutral-700 cursor-pointer flex items-center"
                                         onClick={(e) => {
                                             e.stopPropagation(); // Don’t close menu
                                             handleSelect(user.id);
                                         }}
                                     >
-                                        <input
-                                            type="checkbox"
+                                        <AnimatedCheckbox
+                                            label=""
+                                            id="active"
                                             checked={selected.includes(user.id)}
                                             onChange={() =>
                                                 handleSelect(user.id)
                                             }
-                                            className="form-checkbox accent-orange-500"
-                                            onClick={(e) => e.stopPropagation()}
                                         />
                                         <span className="text-neutral-300 text-sm">
                                             {user.name}

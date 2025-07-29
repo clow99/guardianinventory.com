@@ -37,7 +37,7 @@ export default function Modal({ isOpen, onClose, children }) {
                 >
                     {/* stop clicks from bubbling */}
                     <motion.div
-                        className="bg-neutral-800 rounded-2xl p-6 max-w-lg w-full mx-4 relative"
+                        className="bg-neutral-900 rounded border border-neutral-700 p-6 max-w-2xl w-full mx-4 relative"
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 20, opacity: 0 }}

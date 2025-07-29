@@ -20,8 +20,12 @@ export default function LoginPage() {
         // For demo, simulate async login (replace with your real signIn logic)
         try {
             // Example with next-auth credentials provider
-            // const res = await signIn("credentials", { username, password, redirect: false });
-            // if (!res.ok) throw new Error(res.error || "Invalid login");
+            const res = await signIn("credentials", {
+                username,
+                password,
+                redirect: false,
+            });
+            if (!res.ok) throw new Error(res.error || "Invalid login");
 
             // Simulate delay for UI demo
             await new Promise((resolve) => setTimeout(resolve, 1000));

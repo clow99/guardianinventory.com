@@ -7,6 +7,7 @@ export default function RootLayout({ children }) {
             <head>
                 <title>Guardian Inventory</title>
             </head>
+
             <body>{children}</body>
         </html>
     );

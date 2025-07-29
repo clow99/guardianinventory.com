@@ -1,9 +1,9 @@
-import AssetTable from "@/components/tables/AssetTable";
+import InventoryPage from "@/components/inventory/InventoryPage";
 
 export default function Home() {
     return (
-        <div className="text-orange-500">
-            <AssetTable />
+        <div className="h-full p-6 mx-auto pb-[100px]">
+            <InventoryPage />
         </div>
     );
 }

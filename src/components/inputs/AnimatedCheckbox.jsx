@@ -33,12 +33,12 @@ export default function AnimatedCheckbox({
             className={`inline-flex items-center gap-2 cursor-pointer select-none h-8 px-1 py-1 rounded text-xs ${className}`}
             style={{ fontWeight: 500 }}
         >
-            <span className="relative flex items-center justify-center w-5 h-5">
+            <span className="relative flex items-center justify-center w-4 h-4">
                 <input
                     id={id}
                     type="checkbox"
                     onChange={handleChange}
-                    className="absolute left-0 top-0 w-5 h-5 opacity-0 cursor-pointer m-0"
+                    className="absolute left-0 top-0 w-4 h-4 opacity-0 cursor-pointer m-0"
                     {...(isControlled
                         ? { checked: isChecked }
                         : { defaultChecked: internalChecked })}
@@ -47,7 +47,7 @@ export default function AnimatedCheckbox({
 
                 <span
                     className={`
-                        w-5 h-5 flex items-center justify-center rounded border transition
+                        w-4 h-4 flex items-center justify-center rounded border transition
                         border-neutral-700 bg-neutral-800
                         overflow-hidden
                     `}
