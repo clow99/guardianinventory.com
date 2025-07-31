@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import excuteQuery from "../../../../../lib/db";
+import excuteQuery from "@/lib/db";
 
 export const authOptions = {
     providers: [
