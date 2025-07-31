@@ -1,6 +1,6 @@
 // /api/products/get.js (or /route.js if using Next.js app directory)
 import { NextResponse } from "next/server";
-import { getProductsWithAssets } from "@/helpers/productHelper"; // adjust path as needed
+import { getProductsWithAssets } from "@/lib/productHelper"; // adjust path as needed
 
 export async function POST(request) {
     try {

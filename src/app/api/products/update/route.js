@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import excuteQuery from "@/lib/db";
-import { getProductById } from "@/helpers/productHelper"; // adjust path as needed
+import { getProductById } from "@/lib/productHelper"; // adjust path as needed
 
 export async function POST(request) {
     try {
