@@ -30,7 +30,7 @@ jobs:
             - name: 📦 Install dependencies
               run: |
                   echo "Installing dependencies with npm ci..."
-                  npm ci
+                  npm ci --legacy-peer-deps
 
             - name: ✅ Validate dependencies installed
               run: |
