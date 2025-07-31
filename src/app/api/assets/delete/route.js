@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import excuteQuery from "@/lib/db";
-import { getAssetById } from "../../../../../lib/assetHelper";
+import { getAssetById } from "@/lib/assetHelper"; // Adjust path if needed
 
 export async function POST(request) {
     try {
