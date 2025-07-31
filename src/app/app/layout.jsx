@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import { getServerSession } from "next-auth/next";
 import MenuSelectBtns from "@/components/header/MenuSelectBtns";
+import AccountSelect from "@/components/header/AccountSelect";
 
 //menus
 import DashboardMenu from "@/components/menus/DashboardMenu";
@@ -10,6 +11,8 @@ import InventoryMenu from "@/components/menus/InventoryMenu";
 import SearchBarDropdown from "@/components/header/SearchBarDropdown";
 import SettingsMenu from "@/components/menus/SettingsMenu";
 import CalendarMenu from "@/components/menus/CalendarMenu";
+import PermissionsMenu from "@/components/menus/PermissionsMenu";
+import ProfileMenu from "@/components/menus/ProfileMenu";
 
 import {
     House,
@@ -40,8 +43,12 @@ export default async function RootLayout({ children }) {
                 return <></>; // Placeholder for inspections menu
             case "repairs":
                 return <></>;
+            case "permissions":
+                return <PermissionsMenu />;
             case "settings":
                 return <SettingsMenu />;
+            case "profile":
+                return <ProfileMenu />;
             default:
                 return <></>;
         }
@@ -58,19 +65,11 @@ export default async function RootLayout({ children }) {
                 </div>
             </div>
             <div className="w-[250px] h-screen shrink-0 bg-neutral-800 border-r border-neutral-700 flex flex-col">
-                <div className="h-12 border-b border-neutral-700 flex items-center px-3">
-                    <div className="flex flex-row w-full items-center gap-2">
-                        <div className="flex flex-col">
-                            <div className="text-neutral-200 text-sm font-semibold">
-                                Weber Supply
-                            </div>
-                            <div className="text-neutral-400 -mt-0.5 text-[11px]">
-                                Home Office
-                            </div>
-                        </div>
-                        <ChevronsUpDown className="w-4 h-4 ml-auto text-neutral-500" />
-                    </div>
-                </div>
+                <AccountSelect
+                    label="Account"
+                    id="account-select"
+                    className=""
+                />
                 <div className="flex-1 overflow-y-auto darkScroll">
                     {renderSidebar()}
                 </div>

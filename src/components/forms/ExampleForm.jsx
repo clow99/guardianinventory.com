@@ -12,6 +12,7 @@ import AnimatedSwitch from "../inputs/AnimatedSwitch";
 import AnimatedImageViewer from "../inputs/AnimatedImageViewer";
 import AnimatedAvatarUploader from "../inputs/AnimatedAvatarUploader";
 import AnimatedThemeCardSelector from "../inputs/AnimatedThemeCardSelector";
+import AnimatedQRSelect from "../inputs/AnimatedQRSelect";
 
 export default function ExampleForm() {
     const [inputValue, setInputValue] = useState("Guardian Inventory");
@@ -36,7 +37,7 @@ export default function ExampleForm() {
     ];
 
     return (
-        <div>
+        <div className="h-[5000px]">
             <AnimatedInput
                 label="Company Name"
                 value={inputValue}
@@ -142,6 +143,20 @@ export default function ExampleForm() {
                 }}
             />
             <AnimatedThemeCardSelector value={theme} onChange={setTheme} />
+            <div className="mt-10 w-1/3">
+                <AnimatedQRSelect
+                    label="User Roles"
+                    id="roles"
+                    value={roles}
+                    onChange={setRoles}
+                    options={[
+                        { value: "admin", label: "Admin" },
+                        { value: "manager", label: "Manager" },
+                        { value: "staff", label: "Staff" },
+                        { value: "auditor", label: "Auditor" },
+                    ]}
+                />
+            </div>
         </div>
     );
 }

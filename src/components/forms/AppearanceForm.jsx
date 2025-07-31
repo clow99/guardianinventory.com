@@ -7,7 +7,7 @@ export default function AppearanceForm({ initialColor }) {
     const [theme, setTheme] = useState("system");
 
     return (
-        <div className="flex flex-col p-10">
+        <div className="flex flex-col p-2">
             <div className="flex flex-col border-b border-neutral-700 pb-10">
                 <AnimatedThemeCardSelector value={theme} onChange={setTheme} />
             </div>

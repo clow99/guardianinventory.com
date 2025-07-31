@@ -19,7 +19,7 @@ export default function AnimatedSelect({
     const isFloating = isFocused || (value && value !== "");
 
     return (
-        <div className={`relative w-full py-2 ${className}`}>
+        <div className={`relative w-fit min-w-[180px] py-2 ${className}`}>
             <motion.label
                 htmlFor={id}
                 initial={false}
@@ -55,7 +55,7 @@ export default function AnimatedSelect({
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
                 onChange={onChange}
-                className="w-full rounded h-12 border-2 border-neutral-700 bg-neutral-800 px-4 pt-2 pb-2 text-base text-neutral-100 outline-none focus:border-orange-500 transition appearance-none"
+                className="w-full rounded h-10 border border-neutral-700 bg-neutral-800 px-4 pt-2 pb-2 text-base text-neutral-100 outline-none focus:border-orange-500 transition appearance-none"
                 {...rest}
             >
                 <option value="" disabled hidden>

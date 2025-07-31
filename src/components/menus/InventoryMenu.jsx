@@ -1,21 +1,45 @@
 "use client";
 
-import { useState } from "react";
-import { CircleCheckBig, PlusCircle, House, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+    FolderKanban,
+    Settings,
+    ChevronRight,
+    PackageCheck,
+    LayoutPanelLeft,
+    Users,
+    FileCog,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 
+// Top-level menu items (customize as needed)
+const topLevelMenus = [
+    { path: "/app/assets/view", label: "Overview", icon: LayoutPanelLeft },
+];
+
+// Folder projects config with route mapping for sub-items
 const projects = [
     {
+        icon: FolderKanban,
         folder: "Manage Assets",
-        items: ["View Assets", "Assign Assets", "Move Assets"],
+        items: [
+            { label: "Assign Assets", path: "/app/assets/manage/assign" },
+            { label: "Move Assets", path: "/app/assets/manage/move" },
+        ],
     },
     {
+        icon: FileCog,
         folder: "Assets Settings",
         items: [
-            "Assets Types",
-            "Custom Fields",
-            "Permissions",
-            "Notifications",
+            { label: "Asset Types", path: "/app/assets/settings/types" },
+            { label: "Custom Fields", path: "/app/assets/settings/fields" },
+            { label: "Permissions", path: "/app/assets/settings/permissions" },
+            {
+                label: "Notifications",
+                path: "/app/assets/settings/notifications",
+            },
         ],
     },
 ];
@@ -31,10 +55,30 @@ const itemVariants = {
 };
 
 export default function AssetsMenu() {
-    const [openFolders, setOpenFolders] = useState({
-        "Manage Assets": true,
-        "Assets Settings": false,
-    });
+    const pathname = usePathname();
+
+    // Determine active top menu
+    const activeTopMenu = topLevelMenus.find((menu) =>
+        pathname.startsWith(menu.path)
+    )?.label;
+
+    // Folder open/close state
+    const [openFolders, setOpenFolders] = useState({});
+
+    // Auto-open folder if one of its sub-items is active
+    useEffect(() => {
+        projects.forEach((project) => {
+            const found = project.items.some((item) =>
+                pathname.startsWith(item.path)
+            );
+            if (found) {
+                setOpenFolders((prev) => ({
+                    ...prev,
+                    [project.folder]: true,
+                }));
+            }
+        });
+    }, [pathname]);
 
     const toggleFolder = (folderName) => {
         setOpenFolders((prev) => ({
@@ -43,9 +87,50 @@ export default function AssetsMenu() {
         }));
     };
 
+    // Utility to find the active sub-item
+    const getActiveSubItem = () => {
+        for (let project of projects) {
+            for (let item of project.items) {
+                if (pathname.startsWith(item.path)) {
+                    return {
+                        folder: project.folder,
+                        label: item.label,
+                        path: item.path,
+                    };
+                }
+            }
+        }
+        return { folder: null, label: null, path: null };
+    };
+
+    const activeSub = getActiveSubItem();
+
     return (
         <div className="w-full flex flex-col">
-            {projects.map((project, idx) => {
+            {/* Top-level menu links */}
+            {topLevelMenus.map(({ path, label, icon: Icon }) => (
+                <Link
+                    key={label}
+                    href={path}
+                    className={`group w-full h-[35px] px-2 flex items-center hover:bg-neutral-700 gap-2 text-neutral-300 cursor-pointer transition-all duration-200
+                        ${
+                            activeTopMenu === label
+                                ? "bg-neutral-700 text-orange-500"
+                                : ""
+                        }
+                    `}
+                >
+                    <Icon
+                        className={`w-4 h-4 text-neutral-400 group-hover:text-orange-500 ${
+                            activeTopMenu === label ? "text-orange-500" : ""
+                        }`}
+                    />
+                    <div className="text-neutral-200 text-sm">{label}</div>
+                </Link>
+            ))}
+
+            {/* Folder (project) nav */}
+            {projects.map((project) => {
                 const isOpen = openFolders[project.folder];
 
                 return (
@@ -69,9 +154,9 @@ export default function AssetsMenu() {
                             <div
                                 className={`${
                                     isOpen ? "bg-neutral-700" : ""
-                                } w-full group flex border-b border-neutral-700 flex-row items-center gap-1 hover:bg-neutral-700 h-[35px] px-2 py-1 text-neutral-300`}
+                                } w-full group flex flex-row items-center gap-1 hover:bg-neutral-700 h-[35px] px-2 py-1 text-neutral-300`}
                             >
-                                {/* <Folder className="w-4 h-4 text-neutral-400" /> */}
+                                <project.icon className="w-4 h-4 text-neutral-400" />
                                 <div className="text-neutral-200 lg:text-sm mr-auto ml-1">
                                     {project.folder}
                                 </div>
@@ -112,7 +197,7 @@ export default function AssetsMenu() {
                                         <AnimatePresence>
                                             {project.items.map((item, i) => (
                                                 <motion.div
-                                                    key={item}
+                                                    key={item.label}
                                                     className="relative group flex flex-row items-center"
                                                     variants={itemVariants}
                                                     custom={i}
@@ -120,11 +205,24 @@ export default function AssetsMenu() {
                                                     animate="visible"
                                                     exit="exit"
                                                 >
-                                                    <div className="w-full cursor-pointer mb-1 h-8 text-left group flex flex-row items-center gap-1 hover:bg-neutral-700 rounded py-2.5 px-5 lg:px-2 lg:py-0.5 text-sm lg:text-xs text-neutral-400 hover:text-white">
+                                                    <Link
+                                                        href={item.path}
+                                                        className={`
+                                                            w-full cursor-pointer mb-1 h-8 text-left group flex flex-row items-center gap-1 hover:bg-neutral-700 rounded py-2.5 px-5 lg:px-2 lg:py-0.5 text-sm lg:text-xs transition-all
+                                                            ${
+                                                                activeSub.folder ===
+                                                                    project.folder &&
+                                                                activeSub.label ===
+                                                                    item.label
+                                                                    ? "bg-neutral-700 text-orange-500"
+                                                                    : "text-neutral-400 hover:text-white"
+                                                            }
+                                                        `}
+                                                    >
                                                         <div className="text-neutral-200 mr-auto">
-                                                            {item}
+                                                            {item.label}
                                                         </div>
-                                                    </div>
+                                                    </Link>
                                                 </motion.div>
                                             ))}
                                         </AnimatePresence>

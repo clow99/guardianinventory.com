@@ -11,7 +11,7 @@ export default function GeneralForm() {
     const [textareaValue, setTextareaValue] = useState("Description");
 
     return (
-        <div className="flex flex-col p-10">
+        <div className="flex flex-col p-2">
             <div className="flex flex-col border-b border-neutral-700 pb-10">
                 <h1 className="text-2xl text-neutral-200 font-semibold">
                     Company Logo

@@ -10,7 +10,7 @@ import {
     Wrench,
     Check,
     House,
-    Layers,
+    ShieldUser,
     ChartNoAxesCombined,
     Settings,
     CircleUser,
@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Tooltip from "../misc/Tooltip";
+import { signOut } from "next-auth/react";
 
 // Your options array
 const options = [
@@ -32,7 +33,7 @@ const options = [
         id: "inventory",
         icon: Package,
         label: "Inventory",
-        href: "/app/inventory",
+        href: "/app/assets/view",
     },
     {
         id: "calendar",
@@ -40,12 +41,7 @@ const options = [
         label: "Calendar",
         href: "/app/calendar?date=" + new Date().toISOString().split("T")[0],
     },
-    {
-        id: "layers",
-        icon: Layers,
-        label: "Layers",
-        href: "/app/layers",
-    },
+
     {
         id: "charts",
         icon: ChartNoAxesCombined,
@@ -69,6 +65,12 @@ const options = [
         icon: Wrench,
         label: "Repair Status",
         href: "/app/repairs",
+    },
+    {
+        id: "permissions",
+        icon: ShieldUser,
+        label: "Permissions",
+        href: "/app/permissions/view",
     },
 ];
 
@@ -145,7 +147,7 @@ export default function MenuSelectBtns({ initialSelection }) {
                                 ? "bg-neutral-700"
                                 : "bg-transparent"
                         }`}
-                    href="/app/profile"
+                    href="/app/profile/view"
                 >
                     <CircleUser
                         className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200
@@ -158,6 +160,7 @@ export default function MenuSelectBtns({ initialSelection }) {
                 className={`relative group w-10 h-10 shrink-0 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition`}
                 type="button"
                 title="Logout"
+                onClick={() => signOut({ callbackUrl: "/" })}
             >
                 <LogOut
                     className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200`}

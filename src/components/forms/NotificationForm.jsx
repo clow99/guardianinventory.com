@@ -6,7 +6,7 @@ export default function NotificationForm({}) {
     const [enabled, setEnabled] = useState(true);
 
     return (
-        <div className="flex flex-col p-10">
+        <div className="flex flex-col p-2">
             <div>
                 <div className="font-medium text-neutral-200 mb-1">
                     Notification Preferences

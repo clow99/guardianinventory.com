@@ -67,6 +67,7 @@ CREATE TABLE `accounts` (
   `account_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `account_name` varchar(255) NOT NULL,
   `description` varchar(255) DEFAULT NULL,
+  `custom_fields` JSON NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -77,6 +78,7 @@ CREATE TABLE `account_users` (
   `account_id` bigint(20) unsigned NOT NULL,
   `user_id` bigint(20) unsigned NOT NULL,
   `role_id` bigint(20) unsigned DEFAULT NULL,
+  `custom_fields` JSON NULL DEFAULT NULL,
   PRIMARY KEY (`account_id`, `user_id`),
   CONSTRAINT `fk_account_users_account` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`account_id`),
   CONSTRAINT `fk_account_users_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
@@ -89,6 +91,7 @@ CREATE TABLE `sites` (
   `site_name` varchar(255) NOT NULL,
   `site_description` text,
   `address` varchar(255) DEFAULT NULL,
+  `custom_fields` JSON NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -104,6 +107,7 @@ CREATE TABLE `sites` (
 CREATE TABLE `categories` (
   `category_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `category_name` varchar(255) NOT NULL,
+  `custom_fields` JSON NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`category_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -111,6 +115,7 @@ CREATE TABLE `categories` (
 CREATE TABLE `manufacturers` (
   `manufacturer_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `manufacturer_name` varchar(255) NOT NULL,
+  `custom_fields` JSON NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`manufacturer_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -118,6 +123,7 @@ CREATE TABLE `manufacturers` (
 CREATE TABLE `suppliers` (
   `supplier_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `supplier_name` varchar(255) NOT NULL,
+  `custom_fields` JSON NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`supplier_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -131,6 +137,7 @@ CREATE TABLE `products` (
   `category_id` bigint(20) unsigned DEFAULT NULL,
   `manufacturer_id` bigint(20) unsigned DEFAULT NULL,
   `supplier_id` bigint(20) unsigned DEFAULT NULL,
+  `custom_fields` JSON NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -149,6 +156,7 @@ CREATE TABLE `products` (
 CREATE TABLE `product_categories` (
   `product_id` bigint(20) unsigned NOT NULL,
   `category_id` bigint(20) unsigned NOT NULL,
+  `custom_fields` JSON NULL DEFAULT NULL,
   PRIMARY KEY (`product_id`, `category_id`),
   CONSTRAINT `fk_product_categories_product_id` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`),
   CONSTRAINT `fk_product_categories_category_id` FOREIGN KEY (`category_id`) REFERENCES `categories` (`category_id`)
@@ -176,6 +184,7 @@ CREATE TABLE `locations` (
   `location_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `location_name` varchar(255) NOT NULL,
   `address` varchar(255),
+  `custom_fields` JSON NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`location_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -189,6 +198,7 @@ CREATE TABLE `assets` (
   `status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'available',
   `location_id` bigint(20) unsigned DEFAULT NULL,
   `assigned_to` bigint(20) unsigned DEFAULT NULL,
+  `custom_fields` JSON NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -251,6 +261,7 @@ CREATE TABLE `employees` (
   `user_id` bigint(20) unsigned,
   `job_title` varchar(255),
   `department` varchar(255),
+  `custom_fields` JSON NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -314,6 +325,7 @@ CREATE TABLE `asset_tasks` (
   `recurrence_unit` enum('minutes','hours','days','weeks','months') DEFAULT NULL,
   `recurrence_end_at` timestamp NULL DEFAULT NULL,
   `last_run_at` timestamp NULL DEFAULT NULL,
+  `custom_fields` JSON NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,

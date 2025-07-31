@@ -279,7 +279,7 @@ export default function CalendarPage() {
     return (
         <div className="flex flex-col h-screen w-full">
             <div className="flex flex-row items-center justify-between gap-2">
-                <div className="text-2xl text-neutral-200 font-semibold">
+                <div className="text-xl text-neutral-200 font-semibold">
                     Calendar
                 </div>
                 <div className="relative w-[350px]">
