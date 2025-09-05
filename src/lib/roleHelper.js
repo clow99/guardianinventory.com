@@ -7,7 +7,7 @@ export async function getAllRoles({ activeOnly = false } = {}) {
     let conditions = [];
     let values = [];
     if (activeOnly) {
-        conditions.push("(r.deleted_at IS NULL OR r.deleted_at = '')");
+        conditions.push("r.deleted_at IS NULL");
     }
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
     return await excuteQuery({
@@ -29,7 +29,7 @@ export async function getRoleById(role_id) {
             SELECT r.*
             FROM roles r
             WHERE r.role_id = ?
-              AND (r.deleted_at IS NULL OR r.deleted_at = '')
+                  AND r.deleted_at IS NULL
             LIMIT 1
         `,
         values: [role_id],
@@ -89,7 +89,7 @@ export async function getRolePermissions(role_id) {
             FROM role_permissions rp
             INNER JOIN permissions p ON rp.permission_id = p.permission_id
             WHERE rp.role_id = ?
-              AND (p.deleted_at IS NULL OR p.deleted_at = '')
+                  AND p.deleted_at IS NULL
         `,
         values: [role_id],
     });
@@ -131,7 +131,7 @@ export async function getUsersByRoleId(role_id) {
             FROM user_roles ur
             INNER JOIN users u ON ur.user_id = u.id
             WHERE ur.role_id = ?
-              AND (u.deleted_at IS NULL OR u.deleted_at = '')
+                  AND u.deleted_at IS NULL
         `,
         values: [role_id],
     });

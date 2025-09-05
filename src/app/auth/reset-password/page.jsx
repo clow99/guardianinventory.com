@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { Suspense, useState, useMemo } from "react";
 import { PackageCheck, Lock, Eye, EyeOff, Loader2, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function ResetPasswordPage() {
+export const dynamic = "force-dynamic";
+
+function ResetPasswordContent() {
     const [password, setPassword] = useState("");
     const [confirm, setConfirm] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -219,5 +221,13 @@ export default function ResetPasswordPage() {
                 </motion.div>
             </div>
         </main>
+    );
+}
+
+export default function ResetPasswordPage() {
+    return (
+        <Suspense fallback={<main className="min-h-screen bg-neutral-900" /> }>
+            <ResetPasswordContent />
+        </Suspense>
     );
 }

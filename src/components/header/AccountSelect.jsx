@@ -1,34 +1,75 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronsUpDown } from "lucide-react";
+import { useAccount } from "@/app/hooks/useAccount";
 
-export default function AccountSelect({
-    label,
-    id,
-    options = [
-        {
-            value: "account1",
-            sites: [
-                { name: "Site A", url: "https://site-a.com" },
-                { name: "Site B", url: "https://site-b.com" },
-            ],
-            label: "Account 1",
-        },
-        { value: "account2", sites: [], label: "Account 2" },
-        { value: "account3", sites: [], label: "Account 3" },
-    ],
-    className = "",
-    ...rest
-}) {
+export default function AccountSelect({ label, id, className = "", ...rest }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [siteDropdownOpen, setSiteDropdownOpen] = useState(false);
     const boxRef = useRef();
+    const { accountId, setAccountId } = useAccount();
+
+    const [options, setOptions] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [err, setErr] = useState("");
+
+    useEffect(() => {
+        let ignore = false;
+        (async () => {
+            try {
+                setLoading(true);
+                setErr("");
+                const res = await fetch("/api/accounts/list", {
+                    cache: "no-store",
+                });
+                const data = await res.json();
+                if (!data.success)
+                    throw new Error(data.error || "Failed to load accounts");
+                const opts = (data.data || []).map((a) => ({
+                    value: String(a.account_id),
+                    label: a.account_name,
+                    sites: [],
+                }));
+                if (!ignore) setOptions(opts);
+                // If no session account yet, hydrate from cookie/localStorage when possible
+                if (!ignore) {
+                    const cookieAcc = document.cookie
+                        .split("; ")
+                        .find((row) => row.startsWith("account_id="))
+                        ?.split("=")[1];
+                    const storedAcc =
+                        window.localStorage.getItem("lastAccountId");
+                    const fallback = cookieAcc || storedAcc;
+                    if (
+                        !accountId &&
+                        fallback &&
+                        opts.some((o) => o.value === String(fallback))
+                    ) {
+                        setAccount(String(fallback));
+                        await setAccountId(Number(fallback));
+                    }
+                }
+            } catch (e) {
+                if (!ignore) setErr(e.message || "Error");
+            } finally {
+                if (!ignore) setLoading(false);
+            }
+        })();
+        return () => {
+            ignore = true;
+        };
+    }, []);
 
     // Local state for selection
-    const [account, setAccount] = useState(options[0].value);
+    const [account, setAccount] = useState(accountId ? String(accountId) : "");
+    // keep local selection synced with session accountId
+    useEffect(() => {
+        const next = accountId ? String(accountId) : "";
+        setAccount(next);
+    }, [accountId]);
 
     // Find the selected account object
     const selected = options.find((o) => o.value === account);
@@ -91,7 +132,7 @@ export default function AccountSelect({
                             <div className="text-neutral-200 text-sm font-semibold truncate max-w-[140px]">
                                 {selected?.label || (
                                     <span className="text-neutral-500">
-                                        Select...
+                                        {loading ? "Loading..." : "Select..."}
                                     </span>
                                 )}
                             </div>
@@ -99,6 +140,9 @@ export default function AccountSelect({
                         <ChevronsUpDown className="w-4 h-4 ml-auto text-neutral-500" />
                     </div>
                 </div>
+                {err && (
+                    <div className="text-xs text-red-400 mt-1 px-1">{err}</div>
+                )}
                 {/* Dropdown */}
                 <AnimatePresence>
                     {dropdownOpen && (
@@ -126,10 +170,29 @@ export default function AccountSelect({
                                                 : "hover:bg-neutral-700 text-neutral-300"
                                         }
                                     `}
-                                    onClick={() => {
+                                    onClick={async () => {
                                         setDropdownOpen(false);
                                         setIsFocused(false);
                                         setAccount(opt.value);
+                                        // update session/cookie
+                                        await setAccountId(Number(opt.value));
+                                        try {
+                                            await fetch(
+                                                "/api/accounts/select",
+                                                {
+                                                    method: "POST",
+                                                    headers: {
+                                                        "Content-Type":
+                                                            "application/json",
+                                                    },
+                                                    body: JSON.stringify({
+                                                        account_id: Number(
+                                                            opt.value
+                                                        ),
+                                                    }),
+                                                }
+                                            );
+                                        } catch {}
                                         // Reset site to first site of new account
                                         setSite(opt.sites?.[0]?.name || "");
                                     }}

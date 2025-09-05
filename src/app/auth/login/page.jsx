@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
     PackageCheck,
     User,
@@ -13,7 +14,9 @@ import {
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
 
-export default function LoginPage() {
+function LoginInner() {
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams?.get("callbackUrl") || "/app";
     // Local state for inputs and submission
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -32,7 +35,7 @@ export default function LoginPage() {
                 username,
                 password,
                 redirect: true,
-                callbackUrl: "/app/dashboard",
+                callbackUrl,
             });
             if (res && res.error) throw new Error(res.error);
         } catch (err) {
@@ -247,9 +250,7 @@ export default function LoginPage() {
                         type="button"
                         className="flex items-center gap-3 justify-center w-full py-3 px-5 rounded-lg font-semibold text-base bg-white border border-gray-200 shadow-md hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/80 transition-all duration-150 cursor-pointer"
                         aria-label="Sign in with Google"
-                        onClick={() =>
-                            signIn("google", { callbackUrl: "/app/dashboard" })
-                        }
+                        onClick={() => signIn("google", { callbackUrl })}
                     >
                         <span className="h-6 w-6 flex items-center justify-center">
                             <svg width="24" height="24" viewBox="0 0 48 48">
@@ -291,5 +292,13 @@ export default function LoginPage() {
                 </motion.div>
             </div>
         </main>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen grid place-items-center text-neutral-300">Loading…</div>}>
+            <LoginInner />
+        </Suspense>
     );
 }

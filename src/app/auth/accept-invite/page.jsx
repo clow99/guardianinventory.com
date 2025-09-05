@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import {
     PackageCheck,
     User,
@@ -13,7 +13,9 @@ import {
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function AcceptInvitePage() {
+export const dynamic = "force-dynamic";
+
+function AcceptInviteContent() {
     const params = useSearchParams();
     const token = params.get("token");
     const email = params.get("email") || "";
@@ -250,5 +252,13 @@ export default function AcceptInvitePage() {
                 </motion.div>
             </div>
         </main>
+    );
+}
+
+export default function AcceptInvitePage() {
+    return (
+        <Suspense fallback={<main className="min-h-screen bg-neutral-900" /> }>
+            <AcceptInviteContent />
+        </Suspense>
     );
 }

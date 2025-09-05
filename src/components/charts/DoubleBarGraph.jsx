@@ -12,7 +12,7 @@ import {
     ResponsiveContainer,
 } from "recharts";
 
-const data = [
+const defaultData = [
     { name: "Jan", seriesA: 4000, seriesB: 2400, seriesC: 2400 },
     { name: "Feb", seriesA: 3000, seriesB: 1398, seriesC: 2210 },
     { name: "Mar", seriesA: 2000, seriesB: 9800, seriesC: 2290 },
@@ -61,7 +61,7 @@ const CustomBarTooltip = ({ active, payload, label }) => (
 );
 
 export default function DoubleBarGraph({
-    graphData = data,
+    graphData = defaultData,
     title = "Double Bar Graph",
 }) {
     return (

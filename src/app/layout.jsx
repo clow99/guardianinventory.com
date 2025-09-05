@@ -1,5 +1,6 @@
 // app/layout.js
 import "./globals.css";
+import SessionWrapperClient from "@/components/SessionWrapperClient";
 
 export default function RootLayout({ children }) {
     return (
@@ -9,7 +10,7 @@ export default function RootLayout({ children }) {
             </head>
 
             <body className="antialiased bg-neutral-900 text-neutral-200">
-                {children}
+                <SessionWrapperClient>{children}</SessionWrapperClient>
             </body>
         </html>
     );

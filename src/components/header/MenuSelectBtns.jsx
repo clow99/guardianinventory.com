@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import {
@@ -16,6 +17,7 @@ import {
     CircleUser,
     LogOut,
     Calendar,
+    Crown,
 } from "lucide-react";
 import Link from "next/link";
 import Tooltip from "../misc/Tooltip";
@@ -72,11 +74,21 @@ const options = [
         label: "Permissions",
         href: "/app/permissions/view",
     },
+    {
+        id: "admin",
+        icon: Crown,
+        label: "Admin",
+        href: "/app/admin",
+    },
 ];
 
 export default function MenuSelectBtns({ initialSelection }) {
     const router = useRouter();
     const [selected, setSelected] = useState(initialSelection);
+    const { data: session } = useSession();
+    const isAdmin = !!(
+        session?.user?.is_admin || session?.user?.role === "admin"
+    );
 
     const handleSelect = (id) => {
         Cookies.set("selectedSection", id, { expires: 7, path: "/" });
@@ -87,29 +99,31 @@ export default function MenuSelectBtns({ initialSelection }) {
     return (
         <div className="px-1 py-2 flex flex-col gap-1 h-full">
             <div className="flex flex-col gap-1">
-                {options.map((opt) => {
-                    const Icon = opt.icon;
-                    const isSelected = selected === opt.id;
-                    return (
-                        <div
-                            key={opt.id}
-                            onClick={() => handleSelect(opt.id)}
-                            title={opt.label}
-                            type="button"
-                        >
-                            <Link
-                                className={`relative group w-10 h-10 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition
-                        ${isSelected ? "bg-neutral-700" : "bg-transparent"}`}
-                                href={opt.href}
+                {options
+                    .filter((opt) => (opt.id === "admin" ? isAdmin : true))
+                    .map((opt) => {
+                        const Icon = opt.icon;
+                        const isSelected = selected === opt.id;
+                        return (
+                            <div
+                                key={opt.id}
+                                onClick={() => handleSelect(opt.id)}
+                                title={opt.label}
+                                type="button"
                             >
-                                <Icon
-                                    className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200
+                                <Link
+                                    className={`relative group w-10 h-10 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition
+                        ${isSelected ? "bg-neutral-700" : "bg-transparent"}`}
+                                    href={opt.href}
+                                >
+                                    <Icon
+                                        className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200
                             ${isSelected ? "text-orange-500" : ""}`}
-                                />
-                            </Link>
-                        </div>
-                    );
-                })}
+                                    />
+                                </Link>
+                            </div>
+                        );
+                    })}
             </div>
             <div
                 onClick={() => handleSelect("settings")}

@@ -1,10 +1,28 @@
 import excuteQuery from "@/lib/db"; // Adjust path as needed
 
+async function getUserNameExpr() {
+    try {
+        const dbName = process.env.MYSQL_DATABASE;
+        const rows = await excuteQuery({
+            query: `SELECT COLUMN_NAME FROM information_schema.columns WHERE table_schema = ? AND table_name = 'users'`,
+            values: [dbName],
+        });
+        const cols = new Set((rows || []).map((r) => r.COLUMN_NAME));
+        if (cols.has("full_name")) return "u.full_name";
+        if (cols.has("name")) return "u.name";
+        if (cols.has("username")) return "u.username";
+        return "u.email";
+    } catch {
+        return "u.email";
+    }
+}
+
 /**
  * Get all employees (optionally filter by department, group, or active).
  */
 export async function getAllEmployees({ department, active, group_id } = {}) {
-    let conditions = ["(e.deleted_at IS NULL OR e.deleted_at = '')"];
+    const userNameExpr = await getUserNameExpr();
+    let conditions = ["e.deleted_at IS NULL"];
     let values = [];
     if (department) {
         conditions.push("e.department = ?");
@@ -32,7 +50,7 @@ export async function getAllEmployees({ department, active, group_id } = {}) {
 
     return await excuteQuery({
         query: `
-            SELECT e.*, u.full_name, u.email, u.username, u.active
+            SELECT e.*, ${userNameExpr} AS full_name, u.email, u.username, u.active
             FROM employees e
             ${joins}
             ${where}
@@ -46,13 +64,14 @@ export async function getAllEmployees({ department, active, group_id } = {}) {
  */
 export async function getEmployeeById(employee_id) {
     if (!employee_id) throw new Error("Valid employee_id is required.");
+    const userNameExpr = await getUserNameExpr();
     const rows = await excuteQuery({
         query: `
-            SELECT e.*, u.full_name, u.email, u.username, u.active
+            SELECT e.*, ${userNameExpr} AS full_name, u.email, u.username, u.active
             FROM employees e
             LEFT JOIN users u ON e.user_id = u.id
-            WHERE e.employee_id = ?
-              AND (e.deleted_at IS NULL OR e.deleted_at = '')
+                        WHERE e.employee_id = ?
+                            AND e.deleted_at IS NULL
             LIMIT 1
         `,
         values: [employee_id],
@@ -65,13 +84,14 @@ export async function getEmployeeById(employee_id) {
  */
 export async function getEmployeeByUserId(user_id) {
     if (!user_id) throw new Error("Valid user_id is required.");
+    const userNameExpr = await getUserNameExpr();
     const rows = await excuteQuery({
         query: `
-            SELECT e.*, u.full_name, u.email, u.username, u.active
+            SELECT e.*, ${userNameExpr} AS full_name, u.email, u.username, u.active
             FROM employees e
             LEFT JOIN users u ON e.user_id = u.id
-            WHERE e.user_id = ?
-              AND (e.deleted_at IS NULL OR e.deleted_at = '')
+                        WHERE e.user_id = ?
+                            AND e.deleted_at IS NULL
             LIMIT 1
         `,
         values: [user_id],
@@ -88,8 +108,8 @@ export async function getEmployeeGroups(employee_id) {
             SELECT g.group_id, g.group_name
             FROM employee_groups g
             INNER JOIN employee_group_members gm ON g.group_id = gm.group_id
-            WHERE gm.employee_id = ?
-              AND (g.deleted_at IS NULL OR g.deleted_at = '')
+                        WHERE gm.employee_id = ?
+                            AND g.deleted_at IS NULL
         `,
         values: [employee_id],
     });
@@ -107,8 +127,8 @@ export async function getAssetsByEmployee(employee_id) {
             LEFT JOIN sites s ON a.site_id = s.site_id
             LEFT JOIN locations l ON a.location_id = l.location_id
             LEFT JOIN products p ON a.product_id = p.product_id
-            WHERE ea.employee_id = ?
-              AND (a.deleted_at IS NULL OR a.deleted_at = '')
+                        WHERE ea.employee_id = ?
+                            AND a.deleted_at IS NULL
         `,
         values: [employee_id],
     });

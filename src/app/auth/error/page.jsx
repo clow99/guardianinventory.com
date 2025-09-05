@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -21,7 +22,7 @@ const MESSAGES = {
     Default: "Something went wrong during sign in.",
 };
 
-export default function AuthErrorPage() {
+function AuthErrorInner() {
     const params = useSearchParams();
     const error = params.get("error") || "Default";
     const message = MESSAGES[error] || MESSAGES.Default;
@@ -126,5 +127,13 @@ export default function AuthErrorPage() {
                 </motion.div>
             </div>
         </main>
+    );
+}
+
+export default function AuthErrorPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen grid place-items-center text-neutral-300">Loading…</div>}>
+            <AuthErrorInner />
+        </Suspense>
     );
 }

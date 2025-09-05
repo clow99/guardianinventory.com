@@ -13,7 +13,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 // Example data: Asset value tracked by month
-const data = [
+const defaultData = [
     { month: "Jan", Living: 18, Kids: 8, Office: 5, Bedroom: 9 },
     { month: "Feb", Living: 20, Kids: 10, Office: 7, Bedroom: 10 },
     { month: "Mar", Living: 22, Kids: 13, Office: 10, Bedroom: 11 },
@@ -22,7 +22,7 @@ const data = [
     { month: "Jun", Living: 29, Kids: 17, Office: 12, Bedroom: 15 },
 ];
 
-const series = [
+const defaultSeries = [
     { key: "Living", color: "#f97316", icon: "🛋️" },
     { key: "Kids", color: "#2563eb", icon: "🧸" },
     { key: "Office", color: "#64748b", icon: "🗄️" },
@@ -30,7 +30,7 @@ const series = [
 ];
 
 // Custom Tooltip (animated, dark style)
-function CustomTooltip({ active, payload, label }) {
+function CustomTooltip({ active, payload, label, series }) {
     return (
         <AnimatePresence>
             {active && payload && (
@@ -54,7 +54,7 @@ function CustomTooltip({ active, payload, label }) {
                             >
                                 <span style={{ fontSize: "1.1em" }}>
                                     {
-                                        series.find((s) => s.key === item.name)
+                                        series?.find((s) => s.key === item.name)
                                             ?.icon
                                     }
                                 </span>
@@ -77,7 +77,7 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 // Custom Legend
-function CustomLegend({ payload }) {
+function CustomLegend({ payload, series }) {
     return (
         <ul className="flex flex-wrap gap-4 justify-end">
             {payload.map((entry, i) => (
@@ -86,7 +86,7 @@ function CustomLegend({ payload }) {
                     className="flex items-center gap-2 text-gray-200 text-sm"
                 >
                     <span style={{ fontSize: "1.1em" }}>
-                        {series.find((s) => s.key === entry.value)?.icon}
+                        {series?.find((s) => s.key === entry.value)?.icon}
                     </span>
                     <span
                         className="inline-block w-3 h-3 rounded-full"
@@ -101,11 +101,15 @@ function CustomLegend({ payload }) {
     );
 }
 
-export default function AssetLineChart() {
+export default function AssetLineChart({
+    data = defaultData,
+    series = defaultSeries,
+    title = "Asset Trends Over Time",
+}) {
     return (
         <div className="flex flex-col bg-transparent border border-neutral-700 rounded p-4 w-full h-full">
             <h2 className="text-xl font-bold mb-4 text-white whitespace-nowrap">
-                Asset Trends Over Time
+                {title}
             </h2>
             <ResponsiveContainer width="100%" height={340}>
                 <LineChart
@@ -130,14 +134,14 @@ export default function AssetLineChart() {
                         tickLine={false}
                     />
                     <Tooltip
-                        content={<CustomTooltip />}
+                        content={<CustomTooltip series={series} />}
                         wrapperClassName="!outline-none"
                     />
                     <Legend
                         verticalAlign="bottom"
                         align="right"
                         iconType="circle"
-                        content={<CustomLegend />}
+                        content={<CustomLegend series={series} />}
                     />
                     {series.map((s) => (
                         <Line

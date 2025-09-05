@@ -1,5 +1,22 @@
 import excuteQuery from "@/lib/db";
 
+async function getUserNameExpr() {
+    try {
+        const dbName = process.env.MYSQL_DATABASE;
+        const rows = await excuteQuery({
+            query: `SELECT COLUMN_NAME FROM information_schema.columns WHERE table_schema = ? AND table_name = 'users'`,
+            values: [dbName],
+        });
+        const cols = new Set((rows || []).map((r) => r.COLUMN_NAME));
+        if (cols.has("full_name")) return "u.full_name";
+        if (cols.has("name")) return "u.name";
+        if (cols.has("username")) return "u.username";
+        return "u.email";
+    } catch {
+        return "u.email";
+    }
+}
+
 /**
  * Get all employee groups (optionally only active).
  */
@@ -7,7 +24,7 @@ export async function getAllGroups({ activeOnly = false } = {}) {
     let conditions = [];
     let values = [];
     if (activeOnly) {
-        conditions.push("(g.deleted_at IS NULL OR g.deleted_at = '')");
+        conditions.push("g.deleted_at IS NULL");
     }
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
     return await excuteQuery({
@@ -28,8 +45,8 @@ export async function getGroupById(group_id) {
         query: `
             SELECT g.*
             FROM employee_groups g
-            WHERE g.group_id = ?
-              AND (g.deleted_at IS NULL OR g.deleted_at = '')
+                        WHERE g.group_id = ?
+                            AND g.deleted_at IS NULL
             LIMIT 1
         `,
         values: [group_id],
@@ -79,17 +96,19 @@ export async function deleteGroup(group_id) {
  * Get all members of a group (with employee and user info).
  */
 export async function getGroupMembers(group_id) {
-    return await excuteQuery({
+    const userNameExpr = await getUserNameExpr();
+    const rows = await excuteQuery({
         query: `
-            SELECT e.*, u.full_name, u.email, u.username
+            SELECT e.*, ${userNameExpr} AS full_name, u.email, u.username
             FROM employee_group_members gm
             INNER JOIN employees e ON gm.employee_id = e.employee_id
             LEFT JOIN users u ON e.user_id = u.id
             WHERE gm.group_id = ?
-              AND (e.deleted_at IS NULL OR e.deleted_at = '')
+              AND e.deleted_at IS NULL
         `,
         values: [group_id],
     });
+    return rows;
 }
 
 /**

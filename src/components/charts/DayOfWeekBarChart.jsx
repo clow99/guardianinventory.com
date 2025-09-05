@@ -14,7 +14,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 // Example data: one sum per day
-const dayData = [
+const defaultData = [
     { day: "Mon", value: 16, icon: "🌑" },
     { day: "Tue", value: 23, icon: "🌒" },
     { day: "Wed", value: 12, icon: "🌓" },
@@ -92,15 +92,18 @@ function CustomLegend({ payload }) {
     );
 }
 
-export default function DayOfWeekBarChart() {
+export default function DayOfWeekBarChart({
+    data = defaultData,
+    title = "Sums by Day of Week",
+}) {
     return (
         <div className="flex flex-col bg-transparent border border-neutral-700 rounded p-4 w-full h-full">
             <h2 className="text-xl font-bold mb-4 text-white whitespace-nowrap">
-                Sums by Day of Week
+                {title}
             </h2>
             <ResponsiveContainer width="100%" height={320}>
                 <BarChart
-                    data={dayData}
+                    data={data}
                     margin={{ top: 18, right: 24, left: 0, bottom: 6 }}
                 >
                     <CartesianGrid
@@ -130,8 +133,11 @@ export default function DayOfWeekBarChart() {
                     />
                     {/* <Legend content={<CustomLegend />} />  Uncomment if you want a legend */}
                     <Bar dataKey="value" radius={[8, 8, 0, 0]} minPointSize={2}>
-                        {dayData.map((entry, idx) => (
-                            <Cell key={`cell-${idx}`} fill={barColors[idx]} />
+                        {data.map((entry, idx) => (
+                            <Cell
+                                key={`cell-${idx}`}
+                                fill={barColors[idx % barColors.length]}
+                            />
                         ))}
                     </Bar>
                 </BarChart>

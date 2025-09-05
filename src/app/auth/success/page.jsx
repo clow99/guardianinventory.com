@@ -3,8 +3,9 @@
 import { PackageCheck, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function SuccessPage() {
+function SuccessInner() {
     const params = useSearchParams();
     const title = params.get("title") || "Success";
     const message = params.get("message") || "Your request completed successfully.";
@@ -23,5 +24,13 @@ export default function SuccessPage() {
                 </motion.div>
             </div>
         </main>
+    );
+}
+
+export default function SuccessPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen grid place-items-center text-neutral-300">Loading…</div>}>
+            <SuccessInner />
+        </Suspense>
     );
 }

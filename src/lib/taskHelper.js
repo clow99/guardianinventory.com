@@ -1,10 +1,27 @@
 import excuteQuery from "@/lib/db";
 
+async function getUserNameExpr() {
+    try {
+        const dbName = process.env.MYSQL_DATABASE;
+        const rows = await excuteQuery({
+            query: `SELECT COLUMN_NAME FROM information_schema.columns WHERE table_schema = ? AND table_name = 'users'`,
+            values: [dbName],
+        });
+        const cols = new Set((rows || []).map((r) => r.COLUMN_NAME));
+        if (cols.has("full_name")) return "u.full_name";
+        if (cols.has("name")) return "u.name";
+        if (cols.has("username")) return "u.username";
+        return "u.email";
+    } catch {
+        return "u.email";
+    }
+}
+
 /**
  * Get all tasks (optionally by asset, status, or assigned user).
  */
 export async function getAllTasks({ asset_id, status, assigned_user_id } = {}) {
-    let conditions = ["(t.deleted_at IS NULL OR t.deleted_at = '')"];
+    let conditions = ["t.deleted_at IS NULL"];
     let values = [];
     if (asset_id) {
         conditions.push("t.asset_id = ?");
@@ -43,7 +60,7 @@ export async function getTaskById(task_id) {
             SELECT t.*
             FROM asset_tasks t
             WHERE t.id = ?
-              AND (t.deleted_at IS NULL OR t.deleted_at = '')
+              AND t.deleted_at IS NULL
             LIMIT 1
         `,
         values: [task_id],
@@ -100,9 +117,10 @@ export async function deleteTask(task_id) {
  * Get all assignees for a task.
  */
 export async function getTaskAssignees(task_id) {
+    const userNameExpr = await getUserNameExpr();
     return await excuteQuery({
         query: `
-            SELECT ata.*, u.full_name, u.email
+            SELECT ata.*, ${userNameExpr} AS full_name, u.email
             FROM asset_task_assignees ata
             INNER JOIN users u ON ata.user_id = u.id
             WHERE ata.task_id = ?
@@ -141,9 +159,10 @@ export async function removeUserFromTask(task_id, user_id) {
  * Get all files attached to a task.
  */
 export async function getTaskFiles(task_id) {
+    const userNameExpr = await getUserNameExpr();
     return await excuteQuery({
         query: `
-            SELECT f.*, u.full_name AS uploaded_by
+            SELECT f.*, ${userNameExpr} AS uploaded_by
             FROM asset_task_files f
             LEFT JOIN users u ON f.uploaded_by_user_id = u.id
             WHERE f.task_id = ?

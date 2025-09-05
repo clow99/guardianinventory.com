@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { PackageCheck, User, Mail, Lock, Eye, EyeOff, Loader2, Check } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
 
-export default function RegisterPage() {
+function RegisterInner() {
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams?.get("callbackUrl") || "/app";
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -39,12 +42,7 @@ export default function RegisterPage() {
                 throw new Error(data?.message || "Registration failed");
             }
             // Auto sign in with credentials if available
-            await signIn("credentials", {
-                redirect: true,
-                callbackUrl: "/app/dashboard",
-                username,
-                password,
-            });
+            await signIn("credentials", { redirect: true, callbackUrl, username, password });
         } catch (err) {
             setError(err.message || "Something went wrong");
         } finally {
@@ -240,7 +238,7 @@ export default function RegisterPage() {
                         type="button"
                         className="flex items-center gap-3 justify-center w-full py-3 px-5 rounded-lg font-semibold text-base bg-white border border-gray-200 shadow-md hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/80 transition-all duration-150 cursor-pointer"
                         aria-label="Continue with Google"
-                        onClick={() => signIn("google", { callbackUrl: "/app/dashboard" })}
+                        onClick={() => signIn("google", { callbackUrl })}
                     >
                         <span className="h-6 w-6 flex items-center justify-center">
                             <svg width="24" height="24" viewBox="0 0 48 48">
@@ -260,5 +258,13 @@ export default function RegisterPage() {
                 </motion.div>
             </div>
         </main>
+    );
+}
+
+export default function RegisterPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen grid place-items-center text-neutral-300">Loading…</div>}>
+            <RegisterInner />
+        </Suspense>
     );
 }

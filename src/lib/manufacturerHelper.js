@@ -7,7 +7,7 @@ export async function getAllManufacturers({ activeOnly = false } = {}) {
     let conditions = [];
     let values = [];
     if (activeOnly) {
-        conditions.push("(m.deleted_at IS NULL OR m.deleted_at = '')");
+        conditions.push("m.deleted_at IS NULL");
     }
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
     return await excuteQuery({
@@ -28,8 +28,8 @@ export async function getManufacturerById(manufacturer_id) {
         query: `
             SELECT m.*
             FROM manufacturers m
-            WHERE m.manufacturer_id = ?
-              AND (m.deleted_at IS NULL OR m.deleted_at = '')
+                        WHERE m.manufacturer_id = ?
+                            AND m.deleted_at IS NULL
             LIMIT 1
         `,
         values: [manufacturer_id],

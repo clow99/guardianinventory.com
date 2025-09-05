@@ -19,7 +19,7 @@ export async function getProductsWithAssets(account_id) {
             LEFT JOIN categories c ON p.category_id = c.category_id
             LEFT JOIN manufacturers m ON p.manufacturer_id = m.manufacturer_id
             LEFT JOIN suppliers s ON p.supplier_id = s.supplier_id
-            WHERE p.account_id = ? AND (p.deleted_at IS NULL OR p.deleted_at = '')
+            WHERE p.account_id = ? AND p.deleted_at IS NULL
         `,
         values: [id],
     });
@@ -52,7 +52,7 @@ export async function getProductById(product_id) {
             LEFT JOIN categories c ON p.category_id = c.category_id
             LEFT JOIN manufacturers m ON p.manufacturer_id = m.manufacturer_id
             LEFT JOIN suppliers s ON p.supplier_id = s.supplier_id
-            WHERE p.product_id = ? AND (p.deleted_at IS NULL OR p.deleted_at = '')
+            WHERE p.product_id = ? AND p.deleted_at IS NULL
             LIMIT 1
         `,
         values: [id],
@@ -74,7 +74,7 @@ export async function getAllProducts({
     category_id,
     site_id,
 } = {}) {
-    let conditions = [`(p.deleted_at IS NULL OR p.deleted_at = '')`];
+    let conditions = [`p.deleted_at IS NULL`];
     let values = [];
     if (account_id) {
         conditions.push("p.account_id = ?");

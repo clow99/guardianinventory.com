@@ -2,7 +2,7 @@
 import React from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
-const data = [
+const defaultData = [
     { name: "Living room", value: 25, color: "#f97316", icon: "🛋️" }, // Brand orange
     { name: "Kids", value: 17, color: "#2563eb", icon: "🧸" }, // Blue-600
     { name: "Office", value: 13, color: "#64748b", icon: "🗄️" }, // Slate-500
@@ -75,12 +75,15 @@ const CustomTooltip = ({ active, payload }) => (
     </AnimatePresence>
 );
 
-export default function DonutPieChart() {
+export default function DonutPieChart({
+    data = defaultData,
+    title = "Asset Distribution",
+}) {
     return (
         <div className="flex flex-row bg-transparent border border-neutral-700 rounded p-4 w-full h-full">
             <div className="flex-1 w-full min-w-0">
                 <h2 className="text-xl font-bold mb-5 text-white whitespace-nowrap">
-                    Asset Distribution
+                    {title}
                 </h2>
                 <CustomLegend
                     payload={data.map((d, i) => ({

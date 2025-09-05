@@ -11,7 +11,7 @@ export async function getAllSites({ account_id, activeOnly = false } = {}) {
         values.push(account_id);
     }
     if (activeOnly) {
-        conditions.push("(s.deleted_at IS NULL OR s.deleted_at = '')");
+        conditions.push("s.deleted_at IS NULL");
     }
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
     return await excuteQuery({
@@ -34,8 +34,8 @@ export async function getSiteById(site_id) {
             SELECT s.*, a.account_name
             FROM sites s
             LEFT JOIN accounts a ON s.account_id = a.account_id
-            WHERE s.site_id = ?
-              AND (s.deleted_at IS NULL OR s.deleted_at = '')
+                        WHERE s.site_id = ?
+                            AND s.deleted_at IS NULL
             LIMIT 1
         `,
         values: [site_id],

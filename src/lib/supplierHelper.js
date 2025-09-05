@@ -7,7 +7,7 @@ export async function getAllSuppliers({ activeOnly = false } = {}) {
     let conditions = [];
     let values = [];
     if (activeOnly) {
-        conditions.push("(s.deleted_at IS NULL OR s.deleted_at = '')");
+        conditions.push("s.deleted_at IS NULL");
     }
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
     return await excuteQuery({
@@ -28,8 +28,8 @@ export async function getSupplierById(supplier_id) {
         query: `
             SELECT s.*
             FROM suppliers s
-            WHERE s.supplier_id = ?
-              AND (s.deleted_at IS NULL OR s.deleted_at = '')
+                        WHERE s.supplier_id = ?
+                            AND s.deleted_at IS NULL
             LIMIT 1
         `,
         values: [supplier_id],

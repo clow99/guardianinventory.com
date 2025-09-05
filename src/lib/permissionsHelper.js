@@ -7,7 +7,7 @@ export async function getAllPermissions({ activeOnly = false } = {}) {
     let conditions = [];
     let values = [];
     if (activeOnly) {
-        conditions.push("(p.deleted_at IS NULL OR p.deleted_at = '')");
+        conditions.push("p.deleted_at IS NULL");
     }
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
     return await excuteQuery({
@@ -28,8 +28,8 @@ export async function getPermissionById(permission_id) {
         query: `
             SELECT p.*
             FROM permissions p
-            WHERE p.permission_id = ?
-              AND (p.deleted_at IS NULL OR p.deleted_at = '')
+                        WHERE p.permission_id = ?
+                            AND p.deleted_at IS NULL
             LIMIT 1
         `,
         values: [permission_id],
@@ -91,8 +91,8 @@ export async function getPermissionsByRoleId(role_id) {
             SELECT p.*
             FROM role_permissions rp
             INNER JOIN permissions p ON rp.permission_id = p.permission_id
-            WHERE rp.role_id = ?
-              AND (p.deleted_at IS NULL OR p.deleted_at = '')
+                        WHERE rp.role_id = ?
+                            AND p.deleted_at IS NULL
         `,
         values: [role_id],
     });

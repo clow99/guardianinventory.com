@@ -10,6 +10,7 @@ import AddProductModal from "../modals/products/AddProductModal";
 export default function InventoryPage() {
     const [view, setView] = useState("table"); // "table" or "grid"
     const [searchQuery, setSearchQuery] = useState("");
+    const [refreshKey, setRefreshKey] = useState(0);
 
     return (
         <>
@@ -50,13 +51,18 @@ export default function InventoryPage() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-
-                    <AddProductModal />
+                    <AddProductModal
+                        initialProductName={searchQuery}
+                        onAdded={() => setRefreshKey((k) => k + 1)}
+                    />
                 </div>
             </div>
             <div className="h-full">
                 {view === "table" ? (
-                    <AssetTable searchQuery={searchQuery} />
+                    <AssetTable
+                        searchQuery={searchQuery}
+                        refreshKey={refreshKey}
+                    />
                 ) : (
                     <AssetGrid searchQuery={searchQuery} />
                 )}

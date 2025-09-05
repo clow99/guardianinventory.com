@@ -1,5 +1,23 @@
 import excuteQuery from "@/lib/db"; // Adjust path as needed
 
+// Resolve the best available display-name column on users table
+async function getUserNameExpr() {
+    try {
+        const dbName = process.env.MYSQL_DATABASE;
+        const rows = await excuteQuery({
+            query: `SELECT COLUMN_NAME FROM information_schema.columns WHERE table_schema = ? AND table_name = 'users'`,
+            values: [dbName],
+        });
+        const cols = new Set((rows || []).map((r) => r.COLUMN_NAME));
+        if (cols.has("full_name")) return "u.full_name";
+        if (cols.has("name")) return "u.name";
+        if (cols.has("username")) return "u.username";
+        return "u.email";
+    } catch {
+        return "u.email";
+    }
+}
+
 /**
  * Get all assets for a specific account (optionally filter by site, location, status), including joined data.
  */
@@ -9,7 +27,7 @@ export async function getAllAssets({
     location_id,
     status,
 } = {}) {
-    let conditions = [`(a.deleted_at IS NULL OR a.deleted_at = '')`];
+    let conditions = [`a.deleted_at IS NULL`];
     let values = [];
     if (account_id) {
         conditions.push("p.account_id = ?");
@@ -53,6 +71,7 @@ export async function getAssetsByProductId(product_id) {
     if (!product_id || typeof product_id !== "number") {
         throw new Error("Valid product_id is required.");
     }
+    const userNameExpr = await getUserNameExpr();
     const assets = await excuteQuery({
         query: `
             SELECT 
@@ -64,15 +83,15 @@ export async function getAssetsByProductId(product_id) {
                 e.employee_id AS assigned_employee_id,
                 e.job_title AS assigned_employee_job_title,
                 e.department AS assigned_employee_department,
-                u.full_name AS assigned_user_full_name,
+                ${userNameExpr} AS assigned_user_full_name,
                 u.email AS assigned_user_email
             FROM assets a
             LEFT JOIN sites s ON a.site_id = s.site_id
             LEFT JOIN locations l ON a.location_id = l.location_id
             LEFT JOIN employees e ON a.assigned_to = e.employee_id
             LEFT JOIN users u ON e.user_id = u.id
-            WHERE a.product_id = ?
-              AND (a.deleted_at IS NULL OR a.deleted_at = '')
+                        WHERE a.product_id = ?
+                            AND a.deleted_at IS NULL
         `,
         values: [product_id],
     });
@@ -86,6 +105,7 @@ export async function getAssetById(asset_id) {
     if (!asset_id || typeof asset_id !== "number") {
         throw new Error("Valid asset_id is required.");
     }
+    const userNameExpr = await getUserNameExpr();
     const assets = await excuteQuery({
         query: `
             SELECT 
@@ -97,15 +117,15 @@ export async function getAssetById(asset_id) {
                 e.employee_id AS assigned_employee_id,
                 e.job_title AS assigned_employee_job_title,
                 e.department AS assigned_employee_department,
-                u.full_name AS assigned_user_full_name,
+                ${userNameExpr} AS assigned_user_full_name,
                 u.email AS assigned_user_email
             FROM assets a
             LEFT JOIN sites s ON a.site_id = s.site_id
             LEFT JOIN locations l ON a.location_id = l.location_id
             LEFT JOIN employees e ON a.assigned_to = e.employee_id
             LEFT JOIN users u ON e.user_id = u.id
-            WHERE a.asset_id = ?
-              AND (a.deleted_at IS NULL OR a.deleted_at = '')
+                        WHERE a.asset_id = ?
+                            AND a.deleted_at IS NULL
             LIMIT 1
         `,
         values: [asset_id],
@@ -191,8 +211,8 @@ export async function getAssetsByIds(asset_ids) {
     return await excuteQuery({
         query: `
             SELECT * FROM assets
-            WHERE asset_id IN (${placeholders})
-              AND (deleted_at IS NULL OR deleted_at = '')
+                        WHERE asset_id IN (${placeholders})
+                            AND deleted_at IS NULL
         `,
         values: asset_ids,
     });
