@@ -1,4 +1,4 @@
-// app/layout.js (Server Component)
+// app/app/layout.jsx (Server Component)
 import { cookies } from "next/headers";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import { getServerSession } from "next-auth/next";
@@ -27,7 +27,7 @@ export default async function RootLayout({ children }) {
 
     console.log("Session:", session);
 
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const selectedSection =
         cookieStore.get("selectedSection")?.value ?? "dashboard";
 
@@ -55,7 +55,7 @@ export default async function RootLayout({ children }) {
     };
 
     return (
-        <body className={`antialiased flex flex-row h-screen w-screen`}>
+        <div className="antialiased flex flex-row h-screen w-screen bg-neutral-900 text-neutral-200">
             <div className="w-[50px] h-screen shrink-0 bg-neutral-800 border-r border-neutral-700 flex flex-col">
                 <div className="h-12 shrink-0 border-b border-neutral-700 flex items-center justify-center">
                     <img src="/guardianLogo.png" className="h-11 w-11" alt="" />
@@ -114,10 +114,12 @@ export default async function RootLayout({ children }) {
                         <SearchBarDropdown />
                     </div>
                 </div>
-                <div className="w-full h-full overflow-y-auto p-4 bg-neutral-800">
-                    <div className="h-screen">{children}</div>
+                <div className="w-full h-full overflow-y-auto bg-neutral-800">
+                    <div className="container mx-auto px-4 py-4 min-h-full">
+                        {children}
+                    </div>
                 </div>
             </div>
-        </body>
+        </div>
     );
 }

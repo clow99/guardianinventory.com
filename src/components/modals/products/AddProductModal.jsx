@@ -42,20 +42,35 @@ export default function AddProductModal() {
             }
         }
 
+        // Basic required validation
+        const accIdNum = Number(form.account_id);
+        if (!accIdNum || !form.product_name?.trim()) {
+            setError("account_id and product_name are required.");
+            return;
+        }
+
+        const asNum = (v) => {
+            if (Array.isArray(v)) return Number(v[0]);
+            return v !== "" && v != null ? Number(v) : undefined;
+        };
+
         setLoading(true);
         const payload = {
-            ...form,
-            account_id: Number(form.account_id) || undefined,
-            category_id: form.category_id
-                ? Number(form.category_id)
+            product_name: form.product_name,
+            product_description: form.product_description,
+            account_id: accIdNum,
+            category_id: Number.isFinite(asNum(form.category_id))
+                ? asNum(form.category_id)
                 : undefined,
-            manufacturer_id: form.manufacturer_id
-                ? Number(form.manufacturer_id)
+            manufacturer_id: Number.isFinite(asNum(form.manufacturer_id))
+                ? asNum(form.manufacturer_id)
                 : undefined,
-            supplier_id: form.supplier_id
-                ? Number(form.supplier_id)
+            supplier_id: Number.isFinite(asNum(form.supplier_id))
+                ? asNum(form.supplier_id)
                 : undefined,
-            site_id: form.site_id ? Number(form.site_id) : undefined,
+            site_id: Number.isFinite(asNum(form.site_id))
+                ? asNum(form.site_id)
+                : undefined,
             custom_fields: customFieldsObj,
         };
 
@@ -68,14 +83,15 @@ export default function AddProductModal() {
             const data = await res.json();
             if (!data.success)
                 throw new Error(data.error || "Error adding product");
-            setSuccessMsg(`Product added! ID: ${data.product_id}`);
+            const newId = data?.data?.product_id || data?.product_id;
+            setSuccessMsg(`Product added! ID: ${newId ?? "(unknown)"}`);
             setForm({
                 account_id: "",
                 product_name: "",
                 product_description: "",
-                category_id: "",
-                manufacturer_id: "",
-                supplier_id: "",
+                category_id: [],
+                manufacturer_id: [],
+                supplier_id: [],
                 site_id: "",
                 custom_fields: "{}",
             });
@@ -104,6 +120,13 @@ export default function AddProductModal() {
                         Add Product
                     </h2>
                     <div className="flex flex-col">
+                        <AnimatedInput
+                            label="Account ID (required)"
+                            name="account_id"
+                            value={form.account_id}
+                            onChange={handleChange}
+                            placeholder="e.g. 1"
+                        />
                         <AnimatedInput
                             label="Product Name"
                             name="product_name"

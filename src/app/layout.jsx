@@ -8,7 +8,9 @@ export default function RootLayout({ children }) {
                 <title>Guardian Inventory</title>
             </head>
 
-            <body>{children}</body>
+            <body className="antialiased bg-neutral-900 text-neutral-200">
+                {children}
+            </body>
         </html>
     );
 }

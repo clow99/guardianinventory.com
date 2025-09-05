@@ -1,7 +1,17 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-const PUBLIC_PATHS = ["/", "/auth/login"]; // Add your login page path here!
+const PUBLIC_PATHS = [
+    "/",
+    "/auth/login",
+    "/auth/register",
+    "/auth/forgot-password",
+    "/auth/reset-password",
+    "/auth/accept-invite",
+    "/auth/invite",
+    "/auth/success",
+    "/auth/error",
+]; // Public pages
 
 function isPublic(pathname) {
     return (
@@ -15,6 +25,19 @@ function isPublic(pathname) {
 
 export async function middleware(req) {
     const { pathname } = req.nextUrl;
+    const accept = req.headers.get("accept") || "";
+
+    // If a browser hits /api/auth/error directly, send them to the styled page
+    if (
+        pathname.startsWith("/api/auth/error") &&
+        req.method === "GET" &&
+        accept.includes("text/html")
+    ) {
+        const url = new URL("/auth/error", req.url);
+        // preserve query string (e.g., ?error=AccessDenied)
+        url.search = req.nextUrl.search;
+        return NextResponse.redirect(url);
+    }
 
     if (isPublic(pathname)) {
         return NextResponse.next();

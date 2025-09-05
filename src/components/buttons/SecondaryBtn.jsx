@@ -1,3 +1,4 @@
+import Link from "next/link";
 export default function SecondaryBtn({ label, href, icon: Icon, onClick }) {
     return (
         <Link
