@@ -5,7 +5,8 @@ export async function POST(request) {
     try {
         const body = await request.json();
         const { account_name, description = null, custom_fields } = body || {};
-        const name = typeof account_name === "string" ? account_name.trim() : "";
+        const name =
+            typeof account_name === "string" ? account_name.trim() : "";
         if (!name) {
             return NextResponse.json(
                 { success: false, error: "account_name is required." },
@@ -14,8 +15,7 @@ export async function POST(request) {
         }
         const now = new Date();
         const result = await excuteQuery({
-            query:
-                "INSERT INTO accounts (account_name, description, custom_fields, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+            query: "INSERT INTO accounts (account_name, description, custom_fields, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
             values: [
                 name,
                 description,
@@ -29,11 +29,17 @@ export async function POST(request) {
             query: "SELECT * FROM accounts WHERE account_id = ?",
             values: [account_id],
         });
-        return NextResponse.json({ success: true, data: rows?.[0] || { account_id, account_name: name } });
+        return NextResponse.json({
+            success: true,
+            data: rows?.[0] || { account_id, account_name: name },
+        });
     } catch (error) {
         console.error(error);
         return NextResponse.json(
-            { success: false, error: error?.message || "Error creating account." },
+            {
+                success: false,
+                error: error?.message || "Error creating account.",
+            },
             { status: 500 }
         );
     }

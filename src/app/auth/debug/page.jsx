@@ -26,14 +26,16 @@ export default function AuthDebugPage() {
                     >
                         Sign out now
                     </button>
-                    <a className="ml-3 underline" href="/auth/login">Go to Login</a>
+                    <a className="ml-3 underline" href="/auth/login">
+                        Go to Login
+                    </a>
                 </div>
                 <pre className="bg-neutral-800 p-3 rounded border border-neutral-700 overflow-auto">
-{JSON.stringify({ session }, null, 2)}
+                    {JSON.stringify({ session }, null, 2)}
                 </pre>
                 <h2 className="text-xl font-semibold mt-6 mb-2">Token</h2>
                 <pre className="bg-neutral-800 p-3 rounded border border-neutral-700 overflow-auto">
-{JSON.stringify(tokenInfo, null, 2)}
+                    {JSON.stringify(tokenInfo, null, 2)}
                 </pre>
             </div>
         </main>

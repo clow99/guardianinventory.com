@@ -4,14 +4,28 @@ import excuteQuery from "@/lib/db";
 
 export async function POST(req) {
     if (process.env.NODE_ENV === "production") {
-        return NextResponse.json({ ok: false, error: "Not available" }, { status: 404 });
+        return NextResponse.json(
+            { ok: false, error: "Not available" },
+            { status: 404 }
+        );
     }
     try {
-        const isHttps = (process.env.NEXTAUTH_URL || "").startsWith("https://") || !!process.env.VERCEL;
-        const cookieName = isHttps ? "__Secure-next-auth.session-token" : "next-auth.session-token";
-        const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET, cookieName });
+        const isHttps =
+            (process.env.NEXTAUTH_URL || "").startsWith("https://") ||
+            !!process.env.VERCEL;
+        const cookieName = isHttps
+            ? "__Secure-next-auth.session-token"
+            : "next-auth.session-token";
+        const token = await getToken({
+            req,
+            secret: process.env.NEXTAUTH_SECRET,
+            cookieName,
+        });
         if (!token?.email) {
-            return NextResponse.json({ ok: false, error: "No session email" }, { status: 401 });
+            return NextResponse.json(
+                { ok: false, error: "No session email" },
+                { status: 401 }
+            );
         }
         const now = new Date();
         const lastLogon = now.toISOString();
@@ -30,6 +44,9 @@ export async function POST(req) {
         });
         return NextResponse.json({ ok: true, email });
     } catch (e) {
-        return NextResponse.json({ ok: false, error: String(e) }, { status: 500 });
+        return NextResponse.json(
+            { ok: false, error: String(e) },
+            { status: 500 }
+        );
     }
 }

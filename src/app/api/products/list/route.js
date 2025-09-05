@@ -24,11 +24,14 @@ export async function GET(req) {
 
         if (!Number.isFinite(accountId) || accountId <= 0) {
             // try token
-            const isHttps = (process.env.NEXTAUTH_URL || "").startsWith("https://") || !!process.env.VERCEL;
+            const isHttps =
+                (process.env.NEXTAUTH_URL || "").startsWith("https://") ||
+                !!process.env.VERCEL;
             const cookieName = isHttps
                 ? "__Secure-next-auth.session-token"
                 : "next-auth.session-token";
-            const secret = process.env.NEXTAUTH_SECRET || "dev-nextauth-secret-change-me";
+            const secret =
+                process.env.NEXTAUTH_SECRET || "dev-nextauth-secret-change-me";
             const token = await getToken({ req, secret, cookieName });
             if (token?.account_id && Number(token.account_id) > 0) {
                 accountId = Number(token.account_id);
@@ -61,15 +64,26 @@ export async function GET(req) {
 
         let products = await getAllProducts({ account_id: accountId });
         if (q) {
-            const fields = ["product_name", "product_description", "category_name", "manufacturer_name", "supplier_name"];
+            const fields = [
+                "product_name",
+                "product_description",
+                "category_name",
+                "manufacturer_name",
+                "supplier_name",
+            ];
             const norm = (v) => (typeof v === "string" ? v.toLowerCase() : "");
-            products = products.filter((p) => fields.some((f) => norm(p[f]).includes(q)));
+            products = products.filter((p) =>
+                fields.some((f) => norm(p[f]).includes(q))
+            );
         }
         return NextResponse.json({ success: true, data: products || [] });
     } catch (error) {
         console.error("/api/products/list error:", error);
         return NextResponse.json(
-            { success: false, error: error?.message || "Error fetching products." },
+            {
+                success: false,
+                error: error?.message || "Error fetching products.",
+            },
             { status: 500 }
         );
     }

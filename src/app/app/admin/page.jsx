@@ -386,4 +386,159 @@ export default function AdminAccountsPage() {
                                                                         ) : (
                                                                             <span className="text-yellow-300">
                                                                                 Pending
-                                             
+                                                                            </span>
+                                                                        )}
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                ) : (
+                                                    <div className="text-neutral-500 text-sm p-3">
+                                                        No codes yet for this
+                                                        account.
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </Fragment>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <Modal isOpen={!!sendingTo} onClose={() => setSendingTo("")}>
+                <form onSubmit={sendPersonalCode} className="space-y-4">
+                    <div className="text-neutral-100 text-lg font-semibold">
+                        Send personal invite code
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                        <div>
+                            <label className="block text-sm text-neutral-300 mb-1">
+                                Email
+                            </label>
+                            <input
+                                className="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2"
+                                value={sendEmail}
+                                onChange={(e) => setSendEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm text-neutral-300 mb-1">
+                                Custom code (optional)
+                            </label>
+                            <input
+                                className="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2 font-mono"
+                                value={sendCode}
+                                onChange={(e) => setSendCode(e.target.value)}
+                                placeholder="Auto-generate if empty"
+                            />
+                        </div>
+                        <div>
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    className="rounded-lg bg-neutral-700 hover:bg-neutral-600 px-3 py-2 text-sm"
+                                    onClick={() => setSendCode(randomCode())}
+                                >
+                                    Generate
+                                </button>
+                                <button className="flex-1 rounded-lg bg-orange-500/90 hover:bg-orange-500 px-4 py-2 font-semibold">
+                                    Send
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="text-sm text-neutral-400">
+                        The recipient will receive an email with the code and a
+                        link to join.
+                    </div>
+
+                    <div className="mt-4">
+                        <div className="text-neutral-300 font-medium mb-2 flex items-center justify-between">
+                            <span>Recent codes</span>
+                            {sendingTo && (
+                                <button
+                                    type="button"
+                                    className="text-xs rounded bg-neutral-800 hover:bg-neutral-700 px-2 py-1"
+                                    onClick={() => loadRecentCodes(sendingTo)}
+                                >
+                                    Refresh
+                                </button>
+                            )}
+                        </div>
+                        <div className="max-h-64 overflow-auto border border-neutral-800 rounded">
+                            {codesLoading ? (
+                                <div className="text-neutral-500 text-sm p-3">
+                                    Loading…
+                                </div>
+                            ) : recentCodes?.length > 0 ? (
+                                <table className="w-full text-sm">
+                                    <thead className="bg-neutral-800 text-neutral-300">
+                                        <tr>
+                                            <th className="px-2 py-1 text-left">
+                                                Email
+                                            </th>
+                                            <th className="px-2 py-1 text-left">
+                                                Code
+                                            </th>
+                                            <th className="px-2 py-1 text-left">
+                                                Created
+                                            </th>
+                                            <th className="px-2 py-1 text-left">
+                                                Status
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {recentCodes.map((c) => (
+                                            <tr
+                                                key={c.id}
+                                                className="odd:bg-neutral-900"
+                                            >
+                                                <td className="px-2 py-1">
+                                                    {c.email}
+                                                </td>
+                                                <td className="px-2 py-1 font-mono">
+                                                    {c.code}
+                                                </td>
+                                                <td className="px-2 py-1">
+                                                    {formatTimestamp(
+                                                        c.created_at
+                                                    )}
+                                                </td>
+                                                <td className="px-2 py-1">
+                                                    {c.used_at ? (
+                                                        <span
+                                                            className="text-green-400"
+                                                            title={formatTimestamp(
+                                                                c.used_at
+                                                            )}
+                                                        >
+                                                            Used
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-yellow-300">
+                                                            Pending
+                                                        </span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <div className="text-neutral-500 text-sm p-3">
+                                    No codes yet for this account.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </form>
+            </Modal>
+        </div>
+    );
+}

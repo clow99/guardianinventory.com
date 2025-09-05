@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 
 export async function GET(req) {
     if (process.env.NODE_ENV === "production") {
-        return NextResponse.json({ ok: false, error: "Not available" }, { status: 404 });
+        return NextResponse.json(
+            { ok: false, error: "Not available" },
+            { status: 404 }
+        );
     }
     const cookieNames = [
         "next-auth.session-token",
@@ -14,7 +17,10 @@ export async function GET(req) {
 
 export async function POST(req) {
     if (process.env.NODE_ENV === "production") {
-        return NextResponse.json({ ok: false, error: "Not available" }, { status: 404 });
+        return NextResponse.json(
+            { ok: false, error: "Not available" },
+            { status: 404 }
+        );
     }
     const body = await req.json().catch(() => ({}));
     const name = body?.name || "next-auth.session-token";

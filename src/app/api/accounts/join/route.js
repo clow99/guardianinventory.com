@@ -6,10 +6,21 @@ export async function POST(req) {
     try {
         const body = await req.json();
         const code = String(body?.code || "").trim();
-        if (!code) return NextResponse.json({ ok: false, error: "Missing code" }, { status: 400 });
+        if (!code)
+            return NextResponse.json(
+                { ok: false, error: "Missing code" },
+                { status: 400 }
+            );
 
-        const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-        if (!token?.email) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+        const token = await getToken({
+            req,
+            secret: process.env.NEXTAUTH_SECRET,
+        });
+        if (!token?.email)
+            return NextResponse.json(
+                { ok: false, error: "Unauthorized" },
+                { status: 401 }
+            );
 
         // Resolve user_id from email
         const users = await excuteQuery({
@@ -17,11 +28,15 @@ export async function POST(req) {
             values: [token.email],
         });
         const user = Array.isArray(users) ? users[0] : null;
-        if (!user?.id) return NextResponse.json({ ok: false, error: "User not found" }, { status: 404 });
+        if (!user?.id)
+            return NextResponse.json(
+                { ok: false, error: "User not found" },
+                { status: 404 }
+            );
 
-    // Find account by:
-    // 1) per-person code in account_invite_codes (code + email)
-    // 2) numeric id fallback
+        // Find account by:
+        // 1) per-person code in account_invite_codes (code + email)
+        // 2) numeric id fallback
         let account = null;
         // Try per-person code
         const byPerson = await excuteQuery({
@@ -44,7 +59,11 @@ export async function POST(req) {
                 if (Array.isArray(byId) && byId[0]) account = byId[0];
             }
         }
-        if (!account?.account_id) return NextResponse.json({ ok: false, error: "Invalid invite code" }, { status: 404 });
+        if (!account?.account_id)
+            return NextResponse.json(
+                { ok: false, error: "Invalid invite code" },
+                { status: 404 }
+            );
 
         // Map user to account (idempotent)
         await excuteQuery({
@@ -60,9 +79,15 @@ export async function POST(req) {
 
         // Set cookie for SSR fallbacks
         const res = NextResponse.json({ ok: true, account });
-        res.cookies.set("account_id", String(account.account_id), { path: "/", httpOnly: true });
+        res.cookies.set("account_id", String(account.account_id), {
+            path: "/",
+            httpOnly: true,
+        });
         return res;
     } catch (e) {
-        return NextResponse.json({ ok: false, error: String(e) }, { status: 500 });
+        return NextResponse.json(
+            { ok: false, error: String(e) },
+            { status: 500 }
+        );
     }
 }

@@ -12,7 +12,7 @@ export default function AddProductModal({ initialProductName = "", onAdded }) {
     const [isOpen, setIsOpen] = useState(false);
     const [form, setForm] = useState({
         account_id: "",
-    product_name: initialProductName,
+        product_name: initialProductName,
         product_description: "",
         category_id: [],
         manufacturer_id: [],
@@ -22,8 +22,12 @@ export default function AddProductModal({ initialProductName = "", onAdded }) {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [successMsg, setSuccessMsg] = useState("");
-    const [catalog, setCatalog] = useState({ categories: [], manufacturers: [], suppliers: [] });
-    
+    const [catalog, setCatalog] = useState({
+        categories: [],
+        manufacturers: [],
+        suppliers: [],
+    });
+
     // Autofill account_id from session, URL (?account_id), cookie, or localStorage when the modal opens
     useEffect(() => {
         if (!isOpen) return;
@@ -83,13 +87,24 @@ export default function AddProductModal({ initialProductName = "", onAdded }) {
                 ]);
                 if (cancelled) return;
                 setCatalog({
-                    categories: (cats.data || []).map((c) => ({ value: String(c.category_id), label: c.category_name })),
-                    manufacturers: (mans.data || []).map((m) => ({ value: String(m.manufacturer_id), label: m.manufacturer_name })),
-                    suppliers: (sups.data || []).map((s) => ({ value: String(s.supplier_id), label: s.supplier_name })),
+                    categories: (cats.data || []).map((c) => ({
+                        value: String(c.category_id),
+                        label: c.category_name,
+                    })),
+                    manufacturers: (mans.data || []).map((m) => ({
+                        value: String(m.manufacturer_id),
+                        label: m.manufacturer_name,
+                    })),
+                    suppliers: (sups.data || []).map((s) => ({
+                        value: String(s.supplier_id),
+                        label: s.supplier_name,
+                    })),
                 });
             } catch {}
         })();
-        return () => { cancelled = true; };
+        return () => {
+            cancelled = true;
+        };
     }, [isOpen]);
 
     // Load sites when modal opens (filter by account if available)
@@ -110,11 +125,16 @@ export default function AddProductModal({ initialProductName = "", onAdded }) {
                 if (cancelled) return;
                 setCatalog((prev) => ({
                     ...prev,
-                    sites: (data.data || []).map((s) => ({ value: String(s.site_id), label: s.site_name })),
+                    sites: (data.data || []).map((s) => ({
+                        value: String(s.site_id),
+                        label: s.site_name,
+                    })),
                 }));
             } catch {}
         })();
-        return () => { cancelled = true; };
+        return () => {
+            cancelled = true;
+        };
     }, [isOpen, form.account_id, accountId]);
 
     function handleChange(e) {
@@ -131,7 +151,10 @@ export default function AddProductModal({ initialProductName = "", onAdded }) {
 
         // Parse custom_fields JSON; allow blank values
         let customFieldsObj = undefined;
-        if (typeof form.custom_fields === "string" && form.custom_fields.trim() !== "") {
+        if (
+            typeof form.custom_fields === "string" &&
+            form.custom_fields.trim() !== ""
+        ) {
             try {
                 customFieldsObj = JSON.parse(form.custom_fields);
             } catch (err) {
@@ -141,12 +164,12 @@ export default function AddProductModal({ initialProductName = "", onAdded }) {
         }
 
         // Basic required validation
-            // Basic required validation (user-friendly)
-            const accIdNum = Number(form.account_id);
-            if (!accIdNum) {
-                setError("An account is required.");
-                return;
-            }
+        // Basic required validation (user-friendly)
+        const accIdNum = Number(form.account_id);
+        if (!accIdNum) {
+            setError("An account is required.");
+            return;
+        }
 
         const asNum = (v) => {
             if (Array.isArray(v)) return Number(v[0]);
@@ -154,10 +177,12 @@ export default function AddProductModal({ initialProductName = "", onAdded }) {
         };
 
         // Validate FK selections against loaded catalogs (avoid sending invalid ids)
-    const validVal = (val, list = []) => {
+        const validVal = (val, list = []) => {
             if (!val && val !== 0) return undefined;
             const str = String(val);
-            return list.some((o) => String(o.value) === str) ? Number(val) : undefined;
+            return list.some((o) => String(o.value) === str)
+                ? Number(val)
+                : undefined;
         };
 
         setLoading(true);
@@ -190,18 +215,24 @@ export default function AddProductModal({ initialProductName = "", onAdded }) {
             const contentType = res.headers.get("content-type") || "";
             const data = contentType.includes("application/json")
                 ? await res.json()
-                : { success: false, error: `Unexpected response (${res.status})` };
+                : {
+                      success: false,
+                      error: `Unexpected response (${res.status})`,
+                  };
             if (!data.success) {
-                const msg = data.error === "account_id is required."
-                    ? "An account is required."
-                    : data.error || "Error adding product";
+                const msg =
+                    data.error === "account_id is required."
+                        ? "An account is required."
+                        : data.error || "Error adding product";
                 throw new Error(msg);
             }
             const newId = data?.data?.product_id || data?.product_id;
             setSuccessMsg(`Product added! ID: ${newId ?? "(unknown)"}`);
             // Notify parent to refresh
-            try { onAdded && onAdded(newId); } catch {}
-            
+            try {
+                onAdded && onAdded(newId);
+            } catch {}
+
             // Remember the account id for next time
             try {
                 if (accIdNum && Number.isFinite(accIdNum) && accIdNum > 0) {
@@ -210,7 +241,9 @@ export default function AddProductModal({ initialProductName = "", onAdded }) {
                         String(accIdNum)
                     );
                     // 30 days cookie
-                    document.cookie = `account_id=${accIdNum}; path=/; max-age=${30 * 24 * 60 * 60}`;
+                    document.cookie = `account_id=${accIdNum}; path=/; max-age=${
+                        30 * 24 * 60 * 60
+                    }`;
                 }
             } catch {}
 
@@ -267,11 +300,18 @@ export default function AddProductModal({ initialProductName = "", onAdded }) {
                         />
                         <AnimatedSelect
                             label="Category"
-                            value={Array.isArray(form.category_id) ? form.category_id[0] ?? "" : form.category_id ?? ""}
+                            value={
+                                Array.isArray(form.category_id)
+                                    ? form.category_id[0] ?? ""
+                                    : form.category_id ?? ""
+                            }
                             options={catalog.categories}
                             onChange={(e) => {
                                 const val = e?.target?.value ?? "";
-                                setForm((prev) => ({ ...prev, category_id: val ? [val] : [] }));
+                                setForm((prev) => ({
+                                    ...prev,
+                                    category_id: val ? [val] : [],
+                                }));
                             }}
                         />
                         <div className="grid grid-cols-2 gap-3">
@@ -301,11 +341,18 @@ export default function AddProductModal({ initialProductName = "", onAdded }) {
 
                         <AnimatedSelect
                             label="Site"
-                            value={Array.isArray(form.site_id) ? form.site_id[0] ?? "" : form.site_id ?? ""}
+                            value={
+                                Array.isArray(form.site_id)
+                                    ? form.site_id[0] ?? ""
+                                    : form.site_id ?? ""
+                            }
                             options={catalog.sites || []}
                             onChange={(e) => {
                                 const val = e?.target?.value ?? "";
-                                setForm((prev) => ({ ...prev, site_id: val ? [val] : [] }));
+                                setForm((prev) => ({
+                                    ...prev,
+                                    site_id: val ? [val] : [],
+                                }));
                             }}
                         />
 

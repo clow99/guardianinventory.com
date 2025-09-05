@@ -48,9 +48,10 @@ async function upsertUserDynamic({ email, name }) {
     }
 }
 
-const devSecret = process.env.NODE_ENV !== "production"
-    ? (process.env.NEXTAUTH_SECRET || "dev-nextauth-secret-change-me")
-    : process.env.NEXTAUTH_SECRET;
+const devSecret =
+    process.env.NODE_ENV !== "production"
+        ? process.env.NEXTAUTH_SECRET || "dev-nextauth-secret-change-me"
+        : process.env.NEXTAUTH_SECRET;
 
 export const authOptions = {
     secret: devSecret,
@@ -108,16 +109,22 @@ export const authOptions = {
         },
     },
     callbacks: {
-    async jwt({ token, user, account, trigger, session }) {
+        async jwt({ token, user, account, trigger, session }) {
             // On first sign in, initialize account_id if you have one on the user object
             if (user && token && token.account_id === undefined) {
                 token.account_id = null; // default; can be set later via session.update
             }
             // On initial sign-in, upsert user details (handles Google reliably)
             if (user && user.email) {
-                console.log("[auth][jwt] upsert on sign-in", { email: user.email, name: user.name });
+                console.log("[auth][jwt] upsert on sign-in", {
+                    email: user.email,
+                    name: user.name,
+                });
                 try {
-                    await upsertUserDynamic({ email: user.email, name: user.name || user.email });
+                    await upsertUserDynamic({
+                        email: user.email,
+                        name: user.name || user.email,
+                    });
                 } catch {}
             }
             // Ensure is_admin is on the token so middleware can enforce admin access without DB
@@ -127,10 +134,16 @@ export const authOptions = {
                         query: "SELECT is_admin FROM users WHERE email = ? LIMIT 1",
                         values: [token.email],
                     });
-                    const isAdmin = Array.isArray(rows) && rows[0] ? Number(rows[0].is_admin) === 1 : false;
+                    const isAdmin =
+                        Array.isArray(rows) && rows[0]
+                            ? Number(rows[0].is_admin) === 1
+                            : false;
                     token.is_admin = isAdmin;
                 } catch (e) {
-                    console.warn("[auth][jwt] is_admin fetch failed:", e?.message || e);
+                    console.warn(
+                        "[auth][jwt] is_admin fetch failed:",
+                        e?.message || e
+                    );
                 }
             }
             // Allow client to update account on the fly: useSession().update({ account_id })
@@ -160,7 +173,11 @@ export const authOptions = {
         async session({ session, token }) {
             if (session?.user) {
                 // If account_id not yet in token, try hydrate from last_selected
-                if ((token?.account_id === null || token?.account_id === undefined) && token?.email) {
+                if (
+                    (token?.account_id === null ||
+                        token?.account_id === undefined) &&
+                    token?.email
+                ) {
                     try {
                         const rows = await excuteQuery({
                             query: `
@@ -183,7 +200,7 @@ export const authOptions = {
             }
             return session;
         },
-    // No-op signIn; persistence handled in jwt callback above
+        // No-op signIn; persistence handled in jwt callback above
     },
     // ...other options
 };

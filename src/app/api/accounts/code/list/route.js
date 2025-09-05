@@ -4,16 +4,34 @@ import excuteQuery from "@/lib/db";
 
 export async function GET(req) {
     try {
-        const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-        if (!token?.email) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-        const meRows = await excuteQuery({ query: `SELECT is_admin FROM users WHERE email = ? LIMIT 1`, values: [token.email] });
+        const token = await getToken({
+            req,
+            secret: process.env.NEXTAUTH_SECRET,
+        });
+        if (!token?.email)
+            return NextResponse.json(
+                { ok: false, error: "Unauthorized" },
+                { status: 401 }
+            );
+        const meRows = await excuteQuery({
+            query: `SELECT is_admin FROM users WHERE email = ? LIMIT 1`,
+            values: [token.email],
+        });
         const me = Array.isArray(meRows) ? meRows[0] : null;
-        if (!me || Number(me.is_admin) !== 1) return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+        if (!me || Number(me.is_admin) !== 1)
+            return NextResponse.json(
+                { ok: false, error: "Forbidden" },
+                { status: 403 }
+            );
 
         const url = new URL(req.url);
         const account_id = Number(url.searchParams.get("account_id"));
         const email = url.searchParams.get("email") || null;
-        if (!account_id) return NextResponse.json({ ok: false, error: "account_id required" }, { status: 400 });
+        if (!account_id)
+            return NextResponse.json(
+                { ok: false, error: "account_id required" },
+                { status: 400 }
+            );
 
         // Ensure table exists (no-op if already exists)
         await excuteQuery({
@@ -41,6 +59,9 @@ export async function GET(req) {
         });
         return NextResponse.json({ ok: true, data: rows || [] });
     } catch (e) {
-        return NextResponse.json({ ok: false, error: String(e) }, { status: 500 });
+        return NextResponse.json(
+            { ok: false, error: String(e) },
+            { status: 500 }
+        );
     }
 }

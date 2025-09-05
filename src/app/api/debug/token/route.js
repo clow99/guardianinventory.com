@@ -4,15 +4,23 @@ import { getToken } from "next-auth/jwt";
 export async function GET(req) {
     // Only allow in non-production to avoid leaking token structure
     if (process.env.NODE_ENV === "production") {
-        return NextResponse.json({ ok: false, error: "Not available" }, { status: 404 });
+        return NextResponse.json(
+            { ok: false, error: "Not available" },
+            { status: 404 }
+        );
     }
     try {
         const cookieNames = [
             "next-auth.session-token",
             "__Secure-next-auth.session-token",
         ];
-        const cookiesPresent = cookieNames.filter((n) => !!req.cookies.get(n)?.value);
-        const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+        const cookiesPresent = cookieNames.filter(
+            (n) => !!req.cookies.get(n)?.value
+        );
+        const token = await getToken({
+            req,
+            secret: process.env.NEXTAUTH_SECRET,
+        });
         const now = Math.floor(Date.now() / 1000);
         const payload = token || null;
         return NextResponse.json({
@@ -26,6 +34,9 @@ export async function GET(req) {
             token,
         });
     } catch (e) {
-        return NextResponse.json({ ok: false, error: String(e) }, { status: 500 });
+        return NextResponse.json(
+            { ok: false, error: String(e) },
+            { status: 500 }
+        );
     }
 }

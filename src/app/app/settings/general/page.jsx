@@ -11,12 +11,18 @@ export default function SettingsPage() {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-white text-2xl font-bold">General Settings</h1>
-                <AddAccountModal onCreated={() => setRefreshKey((k) => k + 1)} />
+                <h1 className="text-white text-2xl font-bold">
+                    General Settings
+                </h1>
+                <AddAccountModal
+                    onCreated={() => setRefreshKey((k) => k + 1)}
+                />
             </div>
             <GeneralForm />
             <div>
-                <h2 className="text-white text-xl font-semibold mb-2">Accounts</h2>
+                <h2 className="text-white text-xl font-semibold mb-2">
+                    Accounts
+                </h2>
                 <AccountsList refreshKey={refreshKey} />
             </div>
         </div>

@@ -6,21 +6,40 @@ import { sendEmail } from "@/lib/email";
 function randomCode(len = 8) {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let out = "";
-    for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+    for (let i = 0; i < len; i++)
+        out += chars[Math.floor(Math.random() * chars.length)];
     return out;
 }
 
 export async function POST(req) {
     try {
-        const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-        if (!token?.email) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-        const meRows = await excuteQuery({ query: `SELECT is_admin FROM users WHERE email = ? LIMIT 1`, values: [token.email] });
+        const token = await getToken({
+            req,
+            secret: process.env.NEXTAUTH_SECRET,
+        });
+        if (!token?.email)
+            return NextResponse.json(
+                { ok: false, error: "Unauthorized" },
+                { status: 401 }
+            );
+        const meRows = await excuteQuery({
+            query: `SELECT is_admin FROM users WHERE email = ? LIMIT 1`,
+            values: [token.email],
+        });
         const me = Array.isArray(meRows) ? meRows[0] : null;
-        if (!me || Number(me.is_admin) !== 1) return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+        if (!me || Number(me.is_admin) !== 1)
+            return NextResponse.json(
+                { ok: false, error: "Forbidden" },
+                { status: 403 }
+            );
 
         const body = await req.json();
         const { account_id, email, code } = body || {};
-        if (!account_id || !email) return NextResponse.json({ ok: false, error: "account_id and email required" }, { status: 400 });
+        if (!account_id || !email)
+            return NextResponse.json(
+                { ok: false, error: "account_id and email required" },
+                { status: 400 }
+            );
 
         // Ensure table exists
         await excuteQuery({
@@ -53,11 +72,19 @@ export async function POST(req) {
             subject: `Your Guardian invite code`,
             html: `<p>You have been invited to join Guardian.</p>
                    <p>Your code: <b>${finalCode}</b></p>
-                   <p>Go to <a href="${(process.env.NEXTAUTH_URL || "http://localhost:3000").replace(/\/$/,'')}/auth/join-account">Join Account</a> and enter the code.</p>`,
+                   <p>Go to <a href="${(
+                       process.env.NEXTAUTH_URL || "http://localhost:3000"
+                   ).replace(
+                       /\/$/,
+                       ""
+                   )}/auth/join-account">Join Account</a> and enter the code.</p>`,
         });
 
         return NextResponse.json({ ok: true, code: finalCode });
     } catch (e) {
-        return NextResponse.json({ ok: false, error: String(e) }, { status: 500 });
+        return NextResponse.json(
+            { ok: false, error: String(e) },
+            { status: 500 }
+        );
     }
 }

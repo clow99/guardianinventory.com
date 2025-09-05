@@ -37,10 +37,15 @@ export default function AddAccountModal({ onCreated }) {
             const res = await fetch("/api/accounts/add", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ account_name: trimmed, description: description || null, custom_fields: cf }),
+                body: JSON.stringify({
+                    account_name: trimmed,
+                    description: description || null,
+                    custom_fields: cf,
+                }),
             });
             const data = await res.json();
-            if (!data.success) throw new Error(data.error || "Error creating account");
+            if (!data.success)
+                throw new Error(data.error || "Error creating account");
             setSuccess("Account created.");
             onCreated?.(data.data);
             setTimeout(() => setIsOpen(false), 800);
@@ -64,13 +69,39 @@ export default function AddAccountModal({ onCreated }) {
             </button>
             <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
                 <form className="flex flex-col space-y-4" onSubmit={submit}>
-                    <h2 className="text-lg text-neutral-200 font-semibold mb-2">Add Account</h2>
-                    <AnimatedInput label="Account Name" value={name} onChange={(e) => setName(e.target.value)} required />
-                    <AnimatedTextarea label="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
-                    <AnimatedTextarea label="Custom Fields" value={customFields} onChange={(e) => setCustomFields(e.target.value)} placeholder='{"tier":"pro"}' rows={4} />
-                    {error && <div className="text-red-400 text-sm">{error}</div>}
-                    {success && <div className="text-green-400 text-sm">{success}</div>}
-                    <button type="submit" disabled={loading} className="bg-orange-500/60 text-white cursor-pointer rounded px-4 py-3 w-1/2 ml-auto text-sm hover:bg-orange-500 transition">
+                    <h2 className="text-lg text-neutral-200 font-semibold mb-2">
+                        Add Account
+                    </h2>
+                    <AnimatedInput
+                        label="Account Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                    />
+                    <AnimatedTextarea
+                        label="Description"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        rows={3}
+                    />
+                    <AnimatedTextarea
+                        label="Custom Fields"
+                        value={customFields}
+                        onChange={(e) => setCustomFields(e.target.value)}
+                        placeholder='{"tier":"pro"}'
+                        rows={4}
+                    />
+                    {error && (
+                        <div className="text-red-400 text-sm">{error}</div>
+                    )}
+                    {success && (
+                        <div className="text-green-400 text-sm">{success}</div>
+                    )}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="bg-orange-500/60 text-white cursor-pointer rounded px-4 py-3 w-1/2 ml-auto text-sm hover:bg-orange-500 transition"
+                    >
                         {loading ? "Creating..." : "Create Account"}
                     </button>
                 </form>

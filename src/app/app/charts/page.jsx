@@ -134,3 +134,14 @@ export default function ChartsPage() {
                 <DonutPieChart title="Assets by Category" data={data.donut} />
                 <AssetLineChart
                     title="Top Categories by Month"
+                    data={data.line?.data}
+                    series={data.line?.series}
+                />
+                <DayOfWeekBarChart
+                    title="Tasks by Day of Week"
+                    data={data.dow}
+                />
+            </div>
+        </div>
+    );
+}

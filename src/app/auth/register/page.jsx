@@ -2,7 +2,16 @@
 
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { PackageCheck, User, Mail, Lock, Eye, EyeOff, Loader2, Check } from "lucide-react";
+import {
+    PackageCheck,
+    User,
+    Mail,
+    Lock,
+    Eye,
+    EyeOff,
+    Loader2,
+    Check,
+} from "lucide-react";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
 
@@ -42,7 +51,12 @@ function RegisterInner() {
                 throw new Error(data?.message || "Registration failed");
             }
             // Auto sign in with credentials if available
-            await signIn("credentials", { redirect: true, callbackUrl, username, password });
+            await signIn("credentials", {
+                redirect: true,
+                callbackUrl,
+                username,
+                password,
+            });
         } catch (err) {
             setError(err.message || "Something went wrong");
         } finally {
@@ -56,25 +70,47 @@ function RegisterInner() {
                 {/* Left: Brand / benefits */}
                 <div className="hidden md:flex flex-col gap-5 p-8 rounded-2xl border border-neutral-700 bg-neutral-900/60">
                     <div className="flex items-center gap-3">
-                        <img src="/guardianLogo.png" alt="Guardian" className="h-10 w-10" />
-                        <div className="text-white text-2xl font-extrabold tracking-tight">Guardian</div>
+                        <img
+                            src="/guardianLogo.png"
+                            alt="Guardian"
+                            className="h-10 w-10"
+                        />
+                        <div className="text-white text-2xl font-extrabold tracking-tight">
+                            Guardian
+                        </div>
                     </div>
-                    <div className="text-neutral-300">Create your account to start managing assets and inspections.</div>
+                    <div className="text-neutral-300">
+                        Create your account to start managing assets and
+                        inspections.
+                    </div>
                     <ul className="mt-2 space-y-2">
                         {[
                             "Unlimited assets on paid plans",
                             "Role-based permissions",
                             "QR codes & task automation",
                         ].map((b) => (
-                            <li key={b} className="flex items-start gap-2 text-neutral-300">
+                            <li
+                                key={b}
+                                className="flex items-start gap-2 text-neutral-300"
+                            >
                                 <Check className="h-4 w-4 text-orange-400 mt-0.5" />
                                 <span>{b}</span>
                             </li>
                         ))}
                     </ul>
                     <div className="mt-4 grid grid-cols-2 gap-3 max-w-sm">
-                        <div className="rounded-lg border border-neutral-700 bg-neutral-800/60 p-3 text-sm text-neutral-300">Setup time: <span className="text-white font-semibold">1 day</span></div>
-                        <div className="rounded-lg border border-neutral-700 bg-neutral-800/60 p-3 text-sm text-neutral-300">Support: <span className="text-white font-semibold">24/7</span></div>
+                        <div className="rounded-lg border border-neutral-700 bg-neutral-800/60 p-3 text-sm text-neutral-300">
+                            Setup time:{" "}
+                            <span className="text-white font-semibold">
+                                1 day
+                            </span>
+                        </div>
+                        <div className="rounded-lg border border-neutral-700 bg-neutral-800/60 p-3 text-sm text-neutral-300">
+                            Support:{" "}
+                            <span className="text-white font-semibold">
+                                24/7
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -87,14 +123,30 @@ function RegisterInner() {
                 >
                     <div className="flex flex-col items-center mb-6 gap-2">
                         <PackageCheck className="w-8 h-8 text-orange-500" />
-                        <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Create your account</h1>
-                        <p className="text-neutral-300 text-center">Start your free trial — no credit card needed.</p>
+                        <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
+                            Create your account
+                        </h1>
+                        <p className="text-neutral-300 text-center">
+                            Start your free trial — no credit card needed.
+                        </p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4 mb-3">
+                    <form
+                        onSubmit={handleSubmit}
+                        className="w-full flex flex-col gap-4 mb-3"
+                    >
                         {/* Username */}
-                        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-                            <label htmlFor="username" className="text-neutral-300 mb-1 text-sm font-medium">Username</label>
+                        <motion.div
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.05 }}
+                        >
+                            <label
+                                htmlFor="username"
+                                className="text-neutral-300 mb-1 text-sm font-medium"
+                            >
+                                Username
+                            </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <User className="h-4 w-4 text-neutral-500" />
@@ -108,14 +160,25 @@ function RegisterInner() {
                                     className="w-full rounded-lg pl-10 pr-3 py-2 bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
                                     placeholder="Choose a username"
                                     value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
+                                    onChange={(e) =>
+                                        setUsername(e.target.value)
+                                    }
                                 />
                             </div>
                         </motion.div>
 
                         {/* Email */}
-                        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
-                            <label htmlFor="email" className="text-neutral-300 mb-1 text-sm font-medium">Email</label>
+                        <motion.div
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.08 }}
+                        >
+                            <label
+                                htmlFor="email"
+                                className="text-neutral-300 mb-1 text-sm font-medium"
+                            >
+                                Email
+                            </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <Mail className="h-4 w-4 text-neutral-500" />
@@ -135,8 +198,17 @@ function RegisterInner() {
                         </motion.div>
 
                         {/* Password */}
-                        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.11 }}>
-                            <label htmlFor="password" className="text-neutral-300 mb-1 text-sm font-medium">Password</label>
+                        <motion.div
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.11 }}
+                        >
+                            <label
+                                htmlFor="password"
+                                className="text-neutral-300 mb-1 text-sm font-medium"
+                            >
+                                Password
+                            </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <Lock className="h-4 w-4 text-neutral-500" />
@@ -150,22 +222,41 @@ function RegisterInner() {
                                     className="w-full rounded-lg pl-10 pr-10 py-2 bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
                                     placeholder="Create a strong password"
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
                                 />
                                 <button
                                     type="button"
-                                    aria-label={showPassword ? "Hide password" : "Show password"}
+                                    aria-label={
+                                        showPassword
+                                            ? "Hide password"
+                                            : "Show password"
+                                    }
                                     onClick={() => setShowPassword((s) => !s)}
                                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-500 hover:text-neutral-300"
                                 >
-                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                        <Eye className="h-4 w-4" />
+                                    )}
                                 </button>
                             </div>
                         </motion.div>
 
                         {/* Confirm Password */}
-                        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }}>
-                            <label htmlFor="confirm" className="text-neutral-300 mb-1 text-sm font-medium">Confirm password</label>
+                        <motion.div
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.14 }}
+                        >
+                            <label
+                                htmlFor="confirm"
+                                className="text-neutral-300 mb-1 text-sm font-medium"
+                            >
+                                Confirm password
+                            </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <Lock className="h-4 w-4 text-neutral-500" />
@@ -183,11 +274,19 @@ function RegisterInner() {
                                 />
                                 <button
                                     type="button"
-                                    aria-label={showConfirm ? "Hide password" : "Show password"}
+                                    aria-label={
+                                        showConfirm
+                                            ? "Hide password"
+                                            : "Show password"
+                                    }
                                     onClick={() => setShowConfirm((s) => !s)}
                                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-500 hover:text-neutral-300"
                                 >
-                                    {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    {showConfirm ? (
+                                        <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                        <Eye className="h-4 w-4" />
+                                    )}
                                 </button>
                             </div>
                         </motion.div>
@@ -202,11 +301,23 @@ function RegisterInner() {
                                 onChange={() => setAgree((a) => !a)}
                             />
                             <label htmlFor="agree" className="text-neutral-300">
-                                I agree to the <a href="#" className="hover:text-neutral-100">Terms</a> and <a href="#" className="hover:text-neutral-100">Privacy Policy</a>.
+                                I agree to the{" "}
+                                <a href="#" className="hover:text-neutral-100">
+                                    Terms
+                                </a>{" "}
+                                and{" "}
+                                <a href="#" className="hover:text-neutral-100">
+                                    Privacy Policy
+                                </a>
+                                .
                             </label>
                         </div>
 
-                        {error && <div className="text-red-400 text-sm text-center -mt-1">{error}</div>}
+                        {error && (
+                            <div className="text-red-400 text-sm text-center -mt-1">
+                                {error}
+                            </div>
+                        )}
 
                         <motion.button
                             whileHover={{ scale: loading ? 1 : 1.02 }}
@@ -243,17 +354,37 @@ function RegisterInner() {
                         <span className="h-6 w-6 flex items-center justify-center">
                             <svg width="24" height="24" viewBox="0 0 48 48">
                                 <g>
-                                    <path fill="#4285F4" d="M43.6 20.5H42V20H24v8h11.3C34.8 32.5 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l6-5.8C34.5 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-8 20-20 0-1.3-.1-2.7-.4-3.5z" />
-                                    <path fill="#34A853" d="M6.3 14.7l6.6 4.8C14.3 16.1 18.7 12 24 12c3.1 0 5.9 1.2 8 3.1l6-5.8C34.5 6.1 29.6 4 24 4c-7.3 0-13.5 4.1-17.7 10.7z" />
-                                    <path fill="#FBBC05" d="M24 44c5.5 0 10.4-1.8 14.2-4.9l-6.6-5.4C29.2 35.3 26.7 36 24 36c-6.1 0-10.8-3.5-13.3-8.5l-6.5 5c4.1 6.4 11.3 10.5 19.8 10.5z" />
-                                    <path fill="#EA4335" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.1-3.8 6.3-7.5 7.6l6.6 5.4C39.2 39.2 44 32.5 44 24c0-1.3-.1-2.7-.4-3.5z" />
+                                    <path
+                                        fill="#4285F4"
+                                        d="M43.6 20.5H42V20H24v8h11.3C34.8 32.5 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l6-5.8C34.5 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-8 20-20 0-1.3-.1-2.7-.4-3.5z"
+                                    />
+                                    <path
+                                        fill="#34A853"
+                                        d="M6.3 14.7l6.6 4.8C14.3 16.1 18.7 12 24 12c3.1 0 5.9 1.2 8 3.1l6-5.8C34.5 6.1 29.6 4 24 4c-7.3 0-13.5 4.1-17.7 10.7z"
+                                    />
+                                    <path
+                                        fill="#FBBC05"
+                                        d="M24 44c5.5 0 10.4-1.8 14.2-4.9l-6.6-5.4C29.2 35.3 26.7 36 24 36c-6.1 0-10.8-3.5-13.3-8.5l-6.5 5c4.1 6.4 11.3 10.5 19.8 10.5z"
+                                    />
+                                    <path
+                                        fill="#EA4335"
+                                        d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.1-3.8 6.3-7.5 7.6l6.6 5.4C39.2 39.2 44 32.5 44 24c0-1.3-.1-2.7-.4-3.5z"
+                                    />
                                 </g>
                             </svg>
                         </span>
-                        <span className="text-gray-700">Continue with Google</span>
+                        <span className="text-gray-700">
+                            Continue with Google
+                        </span>
                     </motion.button>
                     <div className="text-center text-xs text-neutral-500 mt-4">
-                        Already have an account? <a href="/auth/login" className="hover:text-neutral-300">Sign in</a>
+                        Already have an account?{" "}
+                        <a
+                            href="/auth/login"
+                            className="hover:text-neutral-300"
+                        >
+                            Sign in
+                        </a>
                     </div>
                 </motion.div>
             </div>
@@ -263,7 +394,13 @@ function RegisterInner() {
 
 export default function RegisterPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen grid place-items-center text-neutral-300">Loading…</div>}>
+        <Suspense
+            fallback={
+                <div className="min-h-screen grid place-items-center text-neutral-300">
+                    Loading…
+                </div>
+            }
+        >
             <RegisterInner />
         </Suspense>
     );

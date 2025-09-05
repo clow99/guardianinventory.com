@@ -132,7 +132,13 @@ function AuthErrorInner() {
 
 export default function AuthErrorPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen grid place-items-center text-neutral-300">Loading…</div>}>
+        <Suspense
+            fallback={
+                <div className="min-h-screen grid place-items-center text-neutral-300">
+                    Loading…
+                </div>
+            }
+        >
             <AuthErrorInner />
         </Suspense>
     );

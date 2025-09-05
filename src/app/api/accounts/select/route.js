@@ -7,12 +7,18 @@ export async function POST(request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.email) {
-            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+            return NextResponse.json(
+                { success: false, error: "Unauthorized" },
+                { status: 401 }
+            );
         }
         const { account_id } = await request.json();
         const accId = Number(account_id);
         if (!Number.isFinite(accId) || accId <= 0) {
-            return NextResponse.json({ success: false, error: "Invalid account_id" }, { status: 400 });
+            return NextResponse.json(
+                { success: false, error: "Invalid account_id" },
+                { status: 400 }
+            );
         }
 
         // Resolve user_id
@@ -22,7 +28,10 @@ export async function POST(request) {
         });
         const user = Array.isArray(users) && users[0];
         if (!user) {
-            return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
+            return NextResponse.json(
+                { success: false, error: "User not found" },
+                { status: 404 }
+            );
         }
 
         // Optional: verify membership
@@ -32,7 +41,13 @@ export async function POST(request) {
         });
         if (!membership.length) {
             // Do not create membership implicitly; deny persist
-            return NextResponse.json({ success: false, error: "User is not a member of this account" }, { status: 403 });
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: "User is not a member of this account",
+                },
+                { status: 403 }
+            );
         }
 
         // Clear previous last_selected flags
@@ -53,6 +68,12 @@ export async function POST(request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error?.message || "Error selecting account" }, { status: 500 });
+        return NextResponse.json(
+            {
+                success: false,
+                error: error?.message || "Error selecting account",
+            },
+            { status: 500 }
+        );
     }
 }

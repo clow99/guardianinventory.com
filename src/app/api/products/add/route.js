@@ -15,7 +15,7 @@ async function existsById(table, idField, id) {
 export async function POST(request) {
     try {
         const body = await request.json();
-    console.log("[products/add] incoming body:", body);
+        console.log("[products/add] incoming body:", body);
         // Extract fields (add more as needed)
         const {
             account_id,
@@ -41,13 +41,14 @@ export async function POST(request) {
                 }
             } catch {}
         }
-    const trimmedName = typeof product_name === "string" ? product_name.trim() : "";
-    const effectiveName = trimmedName || "New Product"; // default if omitted
-    if (!Number.isFinite(coercedAccountId) || coercedAccountId <= 0) {
+        const trimmedName =
+            typeof product_name === "string" ? product_name.trim() : "";
+        const effectiveName = trimmedName || "New Product"; // default if omitted
+        if (!Number.isFinite(coercedAccountId) || coercedAccountId <= 0) {
             return NextResponse.json(
                 {
                     success: false,
-            error: "account_id is required.",
+                    error: "account_id is required.",
                 },
                 { status: 400 }
             );
@@ -55,10 +56,23 @@ export async function POST(request) {
 
         // Prepare fields for insert
         // Start by coercing to numbers/null
-        let coercedCategoryId = Number.isFinite(Number(category_id)) && Number(category_id) > 0 ? Number(category_id) : null;
-        let coercedManufacturerId = Number.isFinite(Number(manufacturer_id)) && Number(manufacturer_id) > 0 ? Number(manufacturer_id) : null;
-        let coercedSupplierId = Number.isFinite(Number(supplier_id)) && Number(supplier_id) > 0 ? Number(supplier_id) : null;
-        let coercedSiteId = Number.isFinite(Number(site_id)) && Number(site_id) > 0 ? Number(site_id) : null;
+        let coercedCategoryId =
+            Number.isFinite(Number(category_id)) && Number(category_id) > 0
+                ? Number(category_id)
+                : null;
+        let coercedManufacturerId =
+            Number.isFinite(Number(manufacturer_id)) &&
+            Number(manufacturer_id) > 0
+                ? Number(manufacturer_id)
+                : null;
+        let coercedSupplierId =
+            Number.isFinite(Number(supplier_id)) && Number(supplier_id) > 0
+                ? Number(supplier_id)
+                : null;
+        let coercedSiteId =
+            Number.isFinite(Number(site_id)) && Number(site_id) > 0
+                ? Number(site_id)
+                : null;
 
         // Debug before existence checks
         console.log("[products/add] coerced IDs before exists:", {
@@ -69,16 +83,32 @@ export async function POST(request) {
         });
 
         // Validate existence to avoid FK errors; null out if not found
-        if (coercedCategoryId && !(await existsById("categories", "category_id", coercedCategoryId))) {
+        if (
+            coercedCategoryId &&
+            !(await existsById("categories", "category_id", coercedCategoryId))
+        ) {
             coercedCategoryId = null;
         }
-        if (coercedManufacturerId && !(await existsById("manufacturers", "manufacturer_id", coercedManufacturerId))) {
+        if (
+            coercedManufacturerId &&
+            !(await existsById(
+                "manufacturers",
+                "manufacturer_id",
+                coercedManufacturerId
+            ))
+        ) {
             coercedManufacturerId = null;
         }
-        if (coercedSupplierId && !(await existsById("suppliers", "supplier_id", coercedSupplierId))) {
+        if (
+            coercedSupplierId &&
+            !(await existsById("suppliers", "supplier_id", coercedSupplierId))
+        ) {
             coercedSupplierId = null;
         }
-        if (coercedSiteId && !(await existsById("sites", "site_id", coercedSiteId))) {
+        if (
+            coercedSiteId &&
+            !(await existsById("sites", "site_id", coercedSiteId))
+        ) {
             coercedSiteId = null;
         }
 
@@ -101,7 +131,7 @@ export async function POST(request) {
         };
 
         // Only insert fields that are present
-    const keys = Object.keys(productFields).filter(
+        const keys = Object.keys(productFields).filter(
             (k) =>
                 productFields[k] !== undefined &&
                 productFields[k] !== null &&
@@ -116,11 +146,16 @@ export async function POST(request) {
         const fieldsSql = keys.join(", ");
 
         // Insert the product
-    const result = await excuteQuery({
+        const result = await excuteQuery({
             query: `INSERT INTO products (${fieldsSql}) VALUES (${placeholders})`,
             values,
         });
-    console.log("[products/add] inserted keys:", fieldsSql, "values:", values);
+        console.log(
+            "[products/add] inserted keys:",
+            fieldsSql,
+            "values:",
+            values
+        );
         const product_id = result.insertId;
 
         // Fetch full product details (with joins and assets)

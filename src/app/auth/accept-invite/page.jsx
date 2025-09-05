@@ -257,7 +257,7 @@ function AcceptInviteContent() {
 
 export default function AcceptInvitePage() {
     return (
-        <Suspense fallback={<main className="min-h-screen bg-neutral-900" /> }>
+        <Suspense fallback={<main className="min-h-screen bg-neutral-900" />}>
             <AcceptInviteContent />
         </Suspense>
     );

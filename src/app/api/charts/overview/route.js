@@ -52,17 +52,32 @@ export async function POST(req) {
 
         // Default: last 6 full months up to today
         const now = new Date();
-        const defaultEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        const defaultEnd = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+            23,
+            59,
+            59,
+            999
+        );
         const defaultStart = addMonths(firstOfMonth(now), -5); // include current month + previous 5
 
         const start = startRaw ? firstOfMonth(startRaw) : defaultStart;
         const end = endRaw ? new Date(endRaw) : defaultEnd;
 
         if (!account_id) {
-            return NextResponse.json({ success: false, error: "account_id required" }, { status: 400 });
+            return NextResponse.json(
+                { success: false, error: "account_id required" },
+                { status: 400 }
+            );
         }
 
-        const whereCore = ["p.account_id = ?", "a.deleted_at IS NULL", "p.deleted_at IS NULL"];
+        const whereCore = [
+            "p.account_id = ?",
+            "a.deleted_at IS NULL",
+            "p.deleted_at IS NULL",
+        ];
         const valuesCore = [account_id];
         if (site_id) {
             whereCore.push("(a.site_id = ? OR p.site_id = ?)");
@@ -125,7 +140,10 @@ export async function POST(req) {
         });
         const totalsByCat = new Map();
         tsRows.forEach((r) => {
-            totalsByCat.set(r.category, (totalsByCat.get(r.category) || 0) + Number(r.cnt));
+            totalsByCat.set(
+                r.category,
+                (totalsByCat.get(r.category) || 0) + Number(r.cnt)
+            );
         });
         const topCats = Array.from(totalsByCat.entries())
             .sort((a, b) => b[1] - a[1])
@@ -142,7 +160,11 @@ export async function POST(req) {
             const row = monthMap.get(r.ym);
             if (row) row[r.category] = (row[r.category] || 0) + Number(r.cnt);
         });
-        const lineSeries = topCats.map((name, idx) => ({ key: name, color: COLORS[idx % COLORS.length], icon: ICONS[idx % ICONS.length] }));
+        const lineSeries = topCats.map((name, idx) => ({
+            key: name,
+            color: COLORS[idx % COLORS.length],
+            icon: ICONS[idx % ICONS.length],
+        }));
         const lineData = Array.from(monthMap.values());
 
         // 3) Double bar: per month assets created vs tasks created vs tasks completed
@@ -163,14 +185,14 @@ export async function POST(req) {
                     FROM asset_tasks t
                     JOIN assets a ON t.asset_id = a.asset_id AND a.deleted_at IS NULL
                     JOIN products p ON a.product_id = p.product_id AND p.deleted_at IS NULL
-                    ${whereSql.replace(/a\.created_at/g, 't.created_at')}
+                    ${whereSql.replace(/a\.created_at/g, "t.created_at")}
                     GROUP BY ym
                     UNION ALL
                     SELECT DATE_FORMAT(t.completed_at, '%Y-%m') AS ym, 0, 0, COUNT(*) AS tasks_completed
                     FROM asset_tasks t
                     JOIN assets a ON t.asset_id = a.asset_id AND a.deleted_at IS NULL
                     JOIN products p ON a.product_id = p.product_id AND p.deleted_at IS NULL
-                    ${whereSql.replace(/a\.created_at/g, 't.completed_at')}
+                    ${whereSql.replace(/a\.created_at/g, "t.completed_at")}
                     AND t.completed_at IS NOT NULL
                     GROUP BY ym
                 ) x
@@ -182,7 +204,12 @@ export async function POST(req) {
         const barsMap = new Map();
         months.forEach((m) => {
             const key = monthKey(m);
-            barsMap.set(key, { name: monthLabel(m), seriesA: 0, seriesB: 0, seriesC: 0 });
+            barsMap.set(key, {
+                name: monthLabel(m),
+                seriesA: 0,
+                seriesB: 0,
+                seriesC: 0,
+            });
         });
         barsRows.forEach((r) => {
             const row = barsMap.get(r.ym);
@@ -201,7 +228,7 @@ export async function POST(req) {
                 FROM asset_tasks t
                 JOIN assets a ON t.asset_id = a.asset_id AND a.deleted_at IS NULL
                 JOIN products p ON a.product_id = p.product_id AND p.deleted_at IS NULL
-                ${whereSql.replace(/a\.created_at/g, 't.created_at')}
+                ${whereSql.replace(/a\.created_at/g, "t.created_at")}
                 GROUP BY wday
                 ORDER BY wday ASC
             `,
@@ -209,7 +236,11 @@ export async function POST(req) {
         });
         const dowNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
         const dowIcons = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗"];
-        const dowInit = dowNames.map((d, i) => ({ day: d, value: 0, icon: dowIcons[i] }));
+        const dowInit = dowNames.map((d, i) => ({
+            day: d,
+            value: 0,
+            icon: dowIcons[i],
+        }));
         dowRows.forEach((r) => {
             const idx = Number(r.wday);
             if (idx >= 0 && idx < 7) dowInit[idx].value = Number(r.cnt) || 0;
@@ -226,6 +257,12 @@ export async function POST(req) {
             },
         });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error?.message || "Error building charts" }, { status: 500 });
+        return NextResponse.json(
+            {
+                success: false,
+                error: error?.message || "Error building charts",
+            },
+            { status: 500 }
+        );
     }
 }
