@@ -17,8 +17,10 @@ export async function POST(request) {
             custom_fields,
         } = body;
 
-        // Validate required fields
-        if (!account_id || !product_name) {
+        // Coerce and validate required fields
+        const coercedAccountId = Number(account_id);
+        const trimmedName = typeof product_name === "string" ? product_name.trim() : "";
+        if (!Number.isFinite(coercedAccountId) || coercedAccountId <= 0 || !trimmedName) {
             return NextResponse.json(
                 {
                     success: false,
@@ -30,8 +32,8 @@ export async function POST(request) {
 
         // Prepare fields for insert
         const productFields = {
-            account_id,
-            product_name,
+            account_id: coercedAccountId,
+            product_name: trimmedName,
             product_description,
             category_id,
             manufacturer_id,

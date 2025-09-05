@@ -22,8 +22,10 @@ export default function AddProductModal() {
     const [successMsg, setSuccessMsg] = useState("");
 
     function handleChange(e) {
-        const { name, value } = e.target;
-        setForm((prev) => ({ ...prev, [name]: value }));
+        const { name, value, type } = e.target;
+        // Trim product_name; keep others as-is
+        const nextVal = name === "product_name" ? value.trimStart() : value;
+        setForm((prev) => ({ ...prev, [name]: nextVal }));
     }
 
     async function handleSubmit(e) {
@@ -123,15 +125,20 @@ export default function AddProductModal() {
                         <AnimatedInput
                             label="Account ID (required)"
                             name="account_id"
+                            id="account_id"
+                            type="number"
                             value={form.account_id}
                             onChange={handleChange}
                             placeholder="e.g. 1"
+                            required
                         />
                         <AnimatedInput
                             label="Product Name"
                             name="product_name"
+                            id="product_name"
                             value={form.product_name}
                             onChange={handleChange}
+                            required
                         />
                         <AnimatedTextarea
                             label="Product Description"
