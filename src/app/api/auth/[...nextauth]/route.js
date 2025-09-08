@@ -55,7 +55,11 @@ const devSecret =
 
 export const authOptions = {
     secret: devSecret,
-    useSecureCookies: false, // ensure non-secure cookies on http://localhost
+    // In development on localhost or plain HTTP, avoid Secure cookies to prevent silent drops
+    useSecureCookies:
+        process.env.NODE_ENV === "production" &&
+        ((process.env.NEXTAUTH_URL || "").startsWith("https://") ||
+            !!process.env.VERCEL),
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID,
@@ -92,23 +96,58 @@ export const authOptions = {
     session: {
         strategy: "jwt",
         maxAge: 30 * 24 * 60 * 60, // 30 days
-        updateAge: 24 * 60 * 60, // refresh session once per day on activity
+        // Refresh the session token more frequently on activity to avoid edge expirations
+        // and clock-skew issues. This triggers a lightweight refresh via the SessionProvider.
+        updateAge: 60 * 60, // 1 hour
     },
     jwt: {
         maxAge: 30 * 24 * 60 * 60,
     },
-    cookies: {
-        sessionToken: {
-            name: "next-auth.session-token",
-            options: {
-                httpOnly: true,
-                sameSite: "lax",
-                path: "/",
-                secure: false,
-            },
-        },
-    },
     callbacks: {
+        async signIn({ user, email }) {
+            // Enforce account membership for all non-admin users
+            try {
+                const emailAddr = user?.email || email?.email;
+                if (!emailAddr) return true; // allow if we somehow don't have an email
+
+                // Ensure the user row exists (important for first-time OAuth sign-ins)
+                try {
+                    await upsertUserDynamic({
+                        email: emailAddr,
+                        name: user?.name || emailAddr,
+                    });
+                } catch {}
+
+                // Admins are exempt
+                const users = await excuteQuery({
+                    query: "SELECT id, is_admin FROM users WHERE email = ? LIMIT 1",
+                    values: [emailAddr],
+                });
+                const row = Array.isArray(users) ? users[0] : null;
+                const isAdmin = row ? Number(row.is_admin) === 1 : false;
+                if (isAdmin) return true;
+
+                // If the user has any account membership, allow sign-in to proceed
+                const membership = await excuteQuery({
+                    query: `SELECT 1
+                           FROM account_users au
+                           JOIN users u ON u.id = au.user_id
+                           WHERE u.email = ?
+                           LIMIT 1`,
+                    values: [emailAddr],
+                });
+                if (Array.isArray(membership) && membership[0]) return true;
+
+                // Otherwise, send them to join an account
+                return "/auth/join-account";
+            } catch (e) {
+                console.warn(
+                    "[auth][signIn] membership check failed:",
+                    e?.message || e
+                );
+                return true; // fail-open to avoid blocking sign-in unexpectedly
+            }
+        },
         async jwt({ token, user, account, trigger, session }) {
             // On first sign in, initialize account_id if you have one on the user object
             if (user && token && token.account_id === undefined) {

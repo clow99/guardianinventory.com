@@ -1,16 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LayoutGrid, Table2 } from "lucide-react";
 import AssetTable from "@/components/tables/AssetTable";
 import AssetGrid from "@/components/grids/AssetGrid";
+import { useAccount } from "@/app/hooks/useAccount";
 import SearchBar from "@/components/inputs/SearchInput";
 import AddProductModal from "../modals/products/AddProductModal";
 
 export default function InventoryPage() {
+    const { accountId } = useAccount();
     const [view, setView] = useState("table"); // "table" or "grid"
     const [searchQuery, setSearchQuery] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [dataMeta, setDataMeta] = useState(null); // { account_id, source }
+
+    // When hard reload is enabled, skip local refetch to prevent flicker
+    useEffect(() => {
+        if (
+            typeof window !== "undefined" &&
+            window.__accountHardReloadOnAccountChange
+        )
+            return;
+        function onAccChange() {
+            setRefreshKey((k) => k + 1);
+        }
+        window.addEventListener("account:change", onAccChange);
+        return () => window.removeEventListener("account:change", onAccChange);
+    }, []);
 
     return (
         <>
@@ -26,7 +44,7 @@ export default function InventoryPage() {
                         className={`flex items-center gap-1 px-4 h-10 rounded border transition text-sm cursor-pointer   
                         ${
                             view === "table"
-                                ? "bg-neutral-400/20 text-orange-400 text-white border-neutral-500/70"
+                                ? "bg-neutral-400/20 text-orange-400 border-neutral-500/70"
                                 : "bg-neutral-800 text-neutral-300 border-neutral-700 hover:border-orange-500"
                         }
                     `}
@@ -39,7 +57,7 @@ export default function InventoryPage() {
                         className={`flex items-center gap-1 px-4 h-10 rounded border transition text-sm cursor-pointer 
                         ${
                             view === "grid"
-                                ? "bg-neutral-400/20 text-orange-400 text-white border-neutral-500/70"
+                                ? "bg-neutral-400/20 text-orange-400 border-neutral-500/70"
                                 : "bg-neutral-800 text-neutral-300 border-neutral-700 hover:border-orange-500"
                         }
                     `}
@@ -51,6 +69,14 @@ export default function InventoryPage() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
+                    <div className="flex items-center gap-3">
+                        {loading && (
+                            <div className="flex items-center gap-2 text-neutral-400">
+                                <span className="h-4 w-4 rounded-full border-2 border-orange-500 border-t-transparent animate-spin"></span>
+                                <span className="text-sm">Refreshing…</span>
+                            </div>
+                        )}
+                    </div>
                     <AddProductModal
                         initialProductName={searchQuery}
                         onAdded={() => setRefreshKey((k) => k + 1)}
@@ -62,9 +88,18 @@ export default function InventoryPage() {
                     <AssetTable
                         searchQuery={searchQuery}
                         refreshKey={refreshKey}
+                        accountId={accountId}
+                        onLoadingChange={setLoading}
+                        onMetaChange={setDataMeta}
                     />
                 ) : (
-                    <AssetGrid searchQuery={searchQuery} />
+                    <AssetGrid
+                        searchQuery={searchQuery}
+                        refreshKey={refreshKey}
+                        accountId={accountId}
+                        onLoadingChange={setLoading}
+                        onMetaChange={setDataMeta}
+                    />
                 )}
             </div>
         </>

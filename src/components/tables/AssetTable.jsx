@@ -17,26 +17,48 @@ import {
 } from "lucide-react";
 
 // Live data fetched from API
-function useProducts(searchQuery, accountId, refreshKey) {
+function useProducts(
+    searchQuery,
+    accountId,
+    refreshKey,
+    onLoadingChange,
+    onMetaChange
+) {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [bump, setBump] = useState(0);
+
+    // Nudge the loader whenever accountId changes to guarantee a new request cycle
+    useEffect(() => {
+        setBump((n) => n + 1);
+    }, [accountId]);
 
     useEffect(() => {
         let ignore = false;
         const controller = new AbortController();
         async function load() {
             try {
+                // Require a selected account; don't fetch with fallbacks to avoid wrong data
+                if (!accountId) {
+                    setItems([]);
+                    setError("");
+                    onLoadingChange && onLoadingChange(false);
+                    onMetaChange && onMetaChange(null);
+                    return;
+                }
                 setLoading(true);
+                onLoadingChange && onLoadingChange(true);
                 setError("");
                 const u = new URL("/api/products/list", window.location.origin);
                 if (searchQuery) u.searchParams.set("q", searchQuery);
-                if (accountId)
-                    u.searchParams.set("account_id", String(accountId));
+                u.searchParams.set("t", String(Date.now()));
+                u.searchParams.set("account_id", String(accountId));
                 const res = await fetch(u.toString(), {
                     cache: "no-store",
                     signal: controller.signal,
                     headers: { Accept: "application/json" },
+                    credentials: "include",
                 });
                 if (!res.ok) {
                     const data = await res.json().catch(() => ({}));
@@ -45,6 +67,10 @@ function useProducts(searchQuery, accountId, refreshKey) {
                     );
                 }
                 const data = await res.json();
+                if (process.env.NODE_ENV !== "production" && data?.meta) {
+                    console.debug("/api/products/list meta:", data.meta);
+                }
+                onMetaChange && onMetaChange(data?.meta || null);
                 if (!ignore)
                     setItems(Array.isArray(data.data) ? data.data : []);
             } catch (e) {
@@ -52,14 +78,30 @@ function useProducts(searchQuery, accountId, refreshKey) {
                     setError(e.message || "Failed to load");
             } finally {
                 if (!ignore) setLoading(false);
+                onLoadingChange && onLoadingChange(false);
             }
+        }
+        // If we're doing a hard reload on account change, avoid clearing to reduce flicker
+        if (!window.__accountHardReloadOnAccountChange) {
+            // Clear items immediately when dependencies change to avoid stale display
+            setItems([]);
         }
         load();
         return () => {
             ignore = true;
             controller.abort();
         };
-    }, [searchQuery, accountId, refreshKey]);
+    }, [searchQuery, accountId, refreshKey, bump]);
+
+    // If hard reload is enabled, skip local listener; otherwise, refetch on event
+    useEffect(() => {
+        if (window.__accountHardReloadOnAccountChange) return;
+        function onChange() {
+            setBump((n) => n + 1);
+        }
+        window.addEventListener("account:change", onChange);
+        return () => window.removeEventListener("account:change", onChange);
+    }, []);
 
     return { items, loading, error };
 }
@@ -157,12 +199,21 @@ const columns = [
     },
 ];
 
-export default function AssetTable({ searchQuery, refreshKey = 0 }) {
-    const { accountId } = useAccount();
+export default function AssetTable({
+    searchQuery,
+    refreshKey = 0,
+    onLoadingChange,
+    onMetaChange,
+    accountId: propAccountId,
+}) {
+    const { accountId: hookAccountId } = useAccount();
+    const accountId = propAccountId ?? hookAccountId;
     const { items, loading, error } = useProducts(
         searchQuery,
         accountId,
-        refreshKey
+        refreshKey,
+        onLoadingChange,
+        onMetaChange
     );
     const [sorting, setSorting] = useState([]);
     const [pageIndex, setPageIndex] = useState(0);
@@ -190,6 +241,11 @@ export default function AssetTable({ searchQuery, refreshKey = 0 }) {
         pageCount: Math.ceil(items.length / pageSize || 1),
     });
 
+    // Reset pagination when account changes
+    useEffect(() => {
+        setPageIndex(0);
+    }, [accountId]);
+
     const rowHeight = 36;
     const tableBodyHeight = rowHeight * pageSize;
 
@@ -207,7 +263,10 @@ export default function AssetTable({ searchQuery, refreshKey = 0 }) {
     }
 
     return (
-        <div className="flex flex-col h-full">
+        <div
+            className="flex flex-col h-full"
+            key={`table-${accountId}-${refreshKey}`}
+        >
             <div className="overflow-x-auto rounded-lg border border-neutral-700 max-h-[657px] overflow-y-auto">
                 <table className="min-w-full border-separate border-spacing-0">
                     <thead className="bg-neutral-800 sticky top-0 z-10">

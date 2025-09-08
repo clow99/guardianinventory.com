@@ -68,12 +68,15 @@ export default async function RootLayout({ children }) {
 
     return (
         <div className="antialiased flex flex-row h-screen w-screen bg-neutral-900 text-neutral-200">
-            <div className="w-[50px] h-screen shrink-0 bg-neutral-800 border-r border-neutral-700 flex flex-col">
+            <div className="w-[50px] h-screen shrink-0 bg-neutral-800 border-r border-neutral-700 flex flex-col relative z-20">
                 <div className="h-12 shrink-0 border-b border-neutral-700 flex items-center justify-center">
                     <img src="/guardianLogo.png" className="h-11 w-11" alt="" />
                 </div>
                 <div className="flex-1 overflow-y-auto thin-scrollbar">
-                    <MenuSelectBtns initialSelection={selectedSection} />
+                    {/* Provide Session so MenuSelectBtns can show admin icon conditionally */}
+                    <SessionWrapperClient session={session}>
+                        <MenuSelectBtns initialSelection={selectedSection} />
+                    </SessionWrapperClient>
                 </div>
             </div>
             <div className="w-[250px] h-screen shrink-0 bg-neutral-800 border-r border-neutral-700 flex flex-col">

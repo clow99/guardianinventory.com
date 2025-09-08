@@ -35,6 +35,16 @@ export async function middleware(req) {
         "__Secure-next-auth.session-token",
     ];
 
+    // Normalize legacy /admin path to /app/admin
+    if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+        const url = new URL(
+            pathname.replace(/^\/admin/, "/app/admin"),
+            req.url
+        );
+        url.search = req.nextUrl.search;
+        return NextResponse.redirect(url);
+    }
+
     // Allow dev-only debug endpoints without auth
     if (
         process.env.NODE_ENV !== "production" &&
@@ -43,9 +53,10 @@ export async function middleware(req) {
         return NextResponse.next();
     }
 
-    // Normalize host to NEXTAUTH_URL origin to prevent cookie domain mismatches (e.g., 127.0.0.1 vs localhost)
+    // Be lenient about origin differences in development to prevent cookie domain thrash
+    // Only enforce origin redirect in production when NEXTAUTH_URL is explicitly set
     const expected = process.env.NEXTAUTH_URL;
-    if (expected) {
+    if (process.env.NODE_ENV === "production" && expected) {
         try {
             const expectedUrl = new URL(expected);
             const currentUrl = new URL(req.url);
@@ -83,11 +94,8 @@ export async function middleware(req) {
     // Let next-auth auto-detect the session cookie name
     const jwtSecret =
         process.env.NEXTAUTH_SECRET || "dev-nextauth-secret-change-me";
-    const cookieName = req.cookies.get("__Secure-next-auth.session-token")
-        ?.value
-        ? "__Secure-next-auth.session-token"
-        : "next-auth.session-token";
-    const token = await getToken({ req, secret: jwtSecret, cookieName });
+    // Allow next-auth to auto-detect the cookie name
+    const token = await getToken({ req, secret: jwtSecret });
     if (!token) {
         // Debug: check if session cookie exists but failed to decode
         const hasSessionCookie = cookieNames.some(
@@ -120,8 +128,12 @@ export async function middleware(req) {
         return NextResponse.redirect(loginUrl);
     }
 
-    // Require account assignment for /app*; admins can bypass to /app/admin
-    if (pathname.startsWith("/app") && !pathname.startsWith("/app/public")) {
+    // Require account assignment for /app* (except admin console); admins can bypass to /app/admin
+    if (
+        pathname.startsWith("/app") &&
+        !pathname.startsWith("/app/public") &&
+        !pathname.startsWith("/app/admin")
+    ) {
         // Note: join-account lives under /auth, so it isn't matched here.
         // If no account but admin, route to admin console instead of join screen
         // Resolve account context: token.account_id or cookie account_id or DB mapping
@@ -132,8 +144,8 @@ export async function middleware(req) {
         }
         if (!accountId) {
             if (token?.is_admin) {
-                const url = new URL("/app/admin", req.url);
-                return NextResponse.redirect(url);
+                // Let admins through; many client pages fetch by accountId and will show empty state
+                return NextResponse.next();
             }
             // If no token/cookie, check DB mapping by email quickly (best-effort)
             // We can't query DB in middleware, so enforce redirect to join screen

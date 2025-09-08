@@ -116,8 +116,20 @@ export default function AccountSelectClient({
                                         setDropdownOpen(false);
                                         setIsFocused(false);
                                         setAccount(opt.value);
-                                        // Update session + persist to DB and cookie/localStorage
-                                        await setAccountId(Number(opt.value));
+                                        // Persist cookie/localStorage and server last_selected first to avoid race
+                                        try {
+                                            document.cookie = `account_id=${Number(
+                                                opt.value
+                                            )}; path=/; max-age=${
+                                                30 * 24 * 60 * 60
+                                            }`;
+                                            localStorage.setItem(
+                                                "lastAccountId",
+                                                String(opt.value)
+                                            );
+                                        } catch {}
+                                        // Update session token + broadcast change immediately
+                                        setAccountId(Number(opt.value));
                                         try {
                                             await fetch(
                                                 "/api/accounts/select",
@@ -135,6 +147,7 @@ export default function AccountSelectClient({
                                                 }
                                             );
                                         } catch {}
+                                        // No route refresh; client data hooks refetch on accountId change
                                     }}
                                 >
                                     <span className="text-sm font-semibold">

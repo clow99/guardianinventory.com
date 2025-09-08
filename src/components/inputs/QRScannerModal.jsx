@@ -1,6 +1,5 @@
-// QRScannerModal.js
-import { useState } from "react";
-import { QrReader } from "react-qr-reader";
+// QRScannerModal.jsx
+import { Scanner } from "@yudiel/react-qr-scanner";
 
 export default function QRScannerModal({ open, onClose, onScan }) {
     return open ? (
@@ -16,14 +15,20 @@ export default function QRScannerModal({ open, onClose, onScan }) {
                     Scan QR Code
                 </h2>
                 <div className="w-64 h-64 rounded overflow-hidden bg-black">
-                    <QrReader
-                        constraints={{ facingMode: "environment" }}
-                        onResult={(result, error) => {
-                            if (result?.text) {
-                                onScan(result.text);
-                            }
+                    <Scanner
+                        onScan={(codes) => {
+                            const text =
+                                Array.isArray(codes) && codes[0]?.rawValue;
+                            if (text) onScan(text);
                         }}
-                        style={{ width: "100%" }}
+                        onError={() => {
+                            /* ignore camera errors */
+                        }}
+                        constraints={{ facingMode: "environment" }}
+                        styles={{
+                            container: { width: "100%", height: "100%" },
+                        }}
+                        classNames={{ video: "w-full h-full object-cover" }}
                     />
                 </div>
                 <p className="text-xs text-neutral-400 mt-2">

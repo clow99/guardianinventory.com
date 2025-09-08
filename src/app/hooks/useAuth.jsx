@@ -5,10 +5,14 @@ import { useSession, signOut } from "next-auth/react";
 export function useAuth() {
     const { data: session, status } = useSession();
 
+    const user = session?.user || null;
+    const isAdmin = !!user?.is_admin;
+
     return {
-        user: session?.user || null,
+        user,
         loading: status === "loading",
-        isAdmin: session?.user?.role === "admin", // assuming you attach this in your session
-        logout: () => signOut({ callbackUrl: "/logged-out" }),
+        isAdmin,
+        isAuthenticated: !!user,
+        logout: () => signOut({ callbackUrl: "/auth/login" }),
     };
 }

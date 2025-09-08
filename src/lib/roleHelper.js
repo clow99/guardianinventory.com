@@ -131,7 +131,6 @@ export async function getUsersByRoleId(role_id) {
             FROM user_roles ur
             INNER JOIN users u ON ur.user_id = u.id
             WHERE ur.role_id = ?
-                  AND u.deleted_at IS NULL
         `,
         values: [role_id],
     });
