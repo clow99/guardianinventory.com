@@ -1,8 +1,11 @@
+"use client";
+import NotificationsPanel from "@/components/settings/NotificationsPanel";
+
 export default function NotificationsPage() {
     return (
-        <div>
-            <h1>Notifications</h1>
-            <p>This is the notifications page.</p>
+        <div className="space-y-4">
+            <h1 className="text-white text-2xl font-bold">Notifications</h1>
+            <NotificationsPanel />
         </div>
     );
 }

@@ -3,11 +3,14 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev --turbopack --port 3002",
-        "build": "next build",
+        "dev": "next dev --turbopack",
+        "build": "next build && npm run test:smoke",
         "start": "next start",
         "lint": "next lint",
-        "seed": "node scripts/seed.mjs"
+        "seed": "node scripts/seed.mjs",
+        "test:auth": "node scripts/tests/auth-guards.mjs",
+        "test:smoke": "node scripts/tests/smoke.mjs",
+        "test:smoke:dev": "node scripts/tests/smoke.mjs --dev"
     },
     "dependencies": {
         "@tanstack/react-table": "^8.21.3",

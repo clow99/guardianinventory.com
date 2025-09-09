@@ -1,3 +1,5 @@
+import excuteQuery from "@/lib/db";
+
 export default async function logAudit({
     action,
     user_id,

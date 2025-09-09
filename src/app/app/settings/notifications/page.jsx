@@ -1,10 +1,13 @@
-import NotificationForm from "@/components/forms/NotificationForm";
-import { cookies } from "next/headers";
+"use client";
+import NotificationsPanel from "@/components/settings/NotificationsPanel";
+import NotificationPreferences from "@/components/settings/NotificationPreferences";
 
-export default function NotificationPage() {
+export default function NotificationSettingsPage() {
     return (
-        <div>
-            <NotificationForm />
+        <div className="space-y-4">
+            <h1 className="text-white text-2xl font-bold">Notifications</h1>
+            <NotificationPreferences />
+            <NotificationsPanel />
         </div>
     );
 }

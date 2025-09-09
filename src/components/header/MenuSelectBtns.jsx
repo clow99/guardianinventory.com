@@ -1,4 +1,5 @@
 "use client";
+import { createPortal } from "react-dom";
 
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
@@ -20,9 +21,11 @@ import {
     Crown,
     MoreVertical,
 } from "lucide-react";
-// Link not needed; we force full navigation so the server layout re-reads cookies
+// We navigate via next/navigation router so server components refresh properly
 import Tooltip from "../misc/Tooltip";
+import Modal from "@/components/modals/Modal";
 import { signOut } from "next-auth/react";
+import TaskListBoard from "@/components/tasks/TaskListBoard";
 
 // Your options array
 const options = [
@@ -93,18 +96,41 @@ export default function MenuSelectBtns({ initialSelection }) {
 
     // Overflow menu (three dots) state
     const [moreOpen, setMoreOpen] = useState(false);
-    const moreRef = useRef(null);
+    const moreRef = useRef(null);    const [tasksOpen, setTasksOpen] = useState(false);
 
+
+    const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
+    useEffect(() => {
+        if (!moreOpen || !moreRef.current) return;
+        const update = () => {
+            const rect = moreRef.current.getBoundingClientRect();
+            setMenuPos({ top: rect.top, left: rect.left + rect.width + 8 });
+        };
+        update();
+        window.addEventListener("resize", update);
+        window.addEventListener("scroll", update, true);
+        return () => {
+            window.removeEventListener("resize", update);
+            window.removeEventListener("scroll", update, true);
+        };
+    }, [moreOpen]);
     const handleSelect = (id, href) => {
-        // Write cookie so server layout can read it on next navigation
-        Cookies.set("selectedSection", id, { expires: 7, path: "/" });
-        setSelected(id);
-        if (!href) return;
-        if (typeof window !== "undefined") {
-            // Force a full reload so server components (layout) pick up the cookie
-            window.location.assign(href);
-        }
-    };
+    // Intercept Tasks: open modal; avoid server cookie/nav
+    if (id === "tasks") {
+        setTasksOpen(true);
+        setSelected("tasks");
+        return;
+    }
+    // Persist selection so the server layout can read it on navigation
+    Cookies.set("selectedSection", id, { expires: 7, path: "/" });
+    setSelected(id);
+    if (!href) return;
+    try {
+        router.push(href);
+    } catch (e) {
+        if (typeof window !== "undefined") window.location.assign(href);
+    }
+};
 
     // Compute which items belong in the overflow menu
     const overflowIds = new Set(["charts", "tasks", "inspections", "repairs"]);
@@ -117,15 +143,15 @@ export default function MenuSelectBtns({ initialSelection }) {
 
     // Close the overflow menu when clicking outside
     useEffect(() => {
-        function onDocMouseDown(e) {
+        function onDocPointerDown(e) {
             if (!moreOpen) return;
             if (!moreRef.current) return;
             if (!moreRef.current.contains(e.target)) {
                 setMoreOpen(false);
             }
         }
-        document.addEventListener("mousedown", onDocMouseDown);
-        return () => document.removeEventListener("mousedown", onDocMouseDown);
+        document.addEventListener("pointerdown", onDocPointerDown);
+        return () => document.removeEventListener("pointerdown", onDocPointerDown);
     }, [moreOpen]);
 
     return (
@@ -158,7 +184,20 @@ export default function MenuSelectBtns({ initialSelection }) {
                         <button
                             type="button"
                             aria-label="More"
-                            onClick={() => setMoreOpen((v) => !v)}
+                            aria-haspopup="menu"
+                            aria-expanded={moreOpen}
+                            onPointerDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setMoreOpen((v) => !v);
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setMoreOpen((v) => !v);
+                                }
+                            }}
                             className={`relative group w-10 h-10 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition ${
                                 overflowSelected
                                     ? "bg-neutral-700"
@@ -172,33 +211,37 @@ export default function MenuSelectBtns({ initialSelection }) {
                             />
                         </button>
                     </div>
-                    {moreOpen && (
-                        <div className="absolute left-12 top-0 z-50 bg-neutral-800 border border-neutral-700 rounded-lg shadow-xl py-1 w-44">
-                            {overflowItems.map((opt) => {
-                                const Icon = opt.icon;
-                                const isSelected = selected === opt.id;
-                                return (
-                                    <button
-                                        key={opt.id}
-                                        type="button"
-                                        tabIndex={0}
-                                        onClick={() => {
-                                            setMoreOpen(false);
-                                            handleSelect(opt.id, opt.href);
-                                        }}
-                                        className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-neutral-700 ${
-                                            isSelected
-                                                ? "text-orange-400"
-                                                : "text-neutral-300"
-                                        }`}
-                                    >
-                                        <Icon className="w-4 h-4" />
-                                        <span>{opt.label}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    )}
+{moreOpen && typeof window !== "undefined" &&
+    createPortal(
+        <div
+            className="bg-neutral-800 border border-neutral-700 rounded-lg shadow-xl py-1 w-44"
+            style={{ position: "fixed", top: menuPos.top, left: menuPos.left, zIndex: 60 }}
+         onPointerDown={(e) => e.stopPropagation()}>
+            {overflowItems.map((opt) => {
+                const Icon = opt.icon;
+                const isSelected = selected === opt.id;
+                return (
+                    <button
+                        key={opt.id}
+                        type="button"
+                        tabIndex={0}
+                        onClick={() => {
+                            setMoreOpen(false);
+                            handleSelect(opt.id, opt.href);
+                        }}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-neutral-700 ${
+                            isSelected ? "text-orange-400" : "text-neutral-300"
+                        }`}
+                    >
+                        <Icon className="w-4 h-4" />
+                        <span>{opt.label}</span>
+                    </button>
+                );
+            })}
+        </div>,
+        document.body
+    )
+}
                 </div>
             </div>
             <div title="Settings" className="mt-auto">
@@ -253,6 +296,16 @@ export default function MenuSelectBtns({ initialSelection }) {
                 />
             </button>
             <div className="h-[10px] shrink-0 w-full"></div>
+            {/* Tasks modal */}
+            <Modal isOpen={tasksOpen} onClose={() => setTasksOpen(false)}>
+                <div className="h-[70vh] w-[80vw] max-w-[1100px] overflow-y-auto">
+                    <div className="flex items-center mb-3">
+                        <div className="text-white text-xl font-semibold">Tasks</div>
+                        <button className="ml-auto text-neutral-400 hover:text-neutral-200" onClick={() => setTasksOpen(false)}>Close</button>
+                    </div>
+                    <TaskListBoard />
+                </div>
+            </Modal>
         </div>
     );
 }

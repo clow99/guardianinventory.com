@@ -1,12 +1,11 @@
-import TaskPage from "@/components/tasks/TaskPage";
-import SessionWrapperClient from "@/components/SessionWrapperClient";
+"use client";
+import TaskListBoard from "@/components/tasks/TaskListBoard";
 
-export default function Home() {
+export default function TasksPage() {
     return (
-        <SessionWrapperClient>
-            <div className="h-full mx-auto pb-[100px]">
-                <TaskPage />
-            </div>
-        </SessionWrapperClient>
+        <div className="h-full mx-auto pb-[100px] space-y-4">
+            <h1 className="text-white text-2xl font-bold">Tasks</h1>
+            <TaskListBoard />
+        </div>
     );
 }

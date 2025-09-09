@@ -7,6 +7,8 @@ import AssetGrid from "@/components/grids/AssetGrid";
 import { useAccount } from "@/app/hooks/useAccount";
 import SearchBar from "@/components/inputs/SearchInput";
 import AddProductModal from "../modals/products/AddProductModal";
+import AddAssetModal from "@/components/modals/assets/AddAssetModal";
+import { Download } from "lucide-react";
 
 export default function InventoryPage() {
     const { accountId } = useAccount();
@@ -29,6 +31,15 @@ export default function InventoryPage() {
         window.addEventListener("account:change", onAccChange);
         return () => window.removeEventListener("account:change", onAccChange);
     }, []);
+
+    function exportCsv() {
+        if (!accountId) return;
+        const u = new URL("/api/products/export", window.location.origin);
+        if (searchQuery) u.searchParams.set("q", searchQuery);
+        u.searchParams.set("account_id", String(accountId));
+        // Trigger browser download via navigation
+        window.location.assign(u.toString());
+    }
 
     return (
         <>
@@ -77,10 +88,19 @@ export default function InventoryPage() {
                             </div>
                         )}
                     </div>
-                    <AddProductModal
-                        initialProductName={searchQuery}
-                        onAdded={() => setRefreshKey((k) => k + 1)}
-                    />
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={exportCsv}
+                            className="flex items-center gap-2 h-10 px-3 rounded border border-neutral-700 bg-neutral-800 text-neutral-200 text-sm hover:border-orange-500"
+                        >
+                            <Download className="w-4 h-4" /> Export CSV
+                        </button>
+                        <AddAssetModal onAdded={() => setRefreshKey((k) => k + 1)} />
+                        <AddProductModal
+                            initialProductName={searchQuery}
+                            onAdded={() => setRefreshKey((k) => k + 1)}
+                        />
+                    </div>
                 </div>
             </div>
             <div className="h-full">

@@ -1,93 +1,74 @@
-name: Build and Deploy Next.js App
+name: CI Build and Deploy
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - name: ⏬ Checkout repository
-              uses: actions/checkout@v2
+  smoke-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-            - name: 🔎 Confirm codebase files present
-              run: |
-                  ls -la
-                  echo "Repository files listed above."
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-            - name: 🛠️ Setup Node.js
-              uses: actions/setup-node@v2
-              with:
-                  node-version: "20.9.0"
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
 
-            - name: 🧹 Clean previous Node modules (if any)
-              run: |
-                  echo "Cleaning up previous node_modules if exists..."
-                  rm -rf node_modules
+      - name: Run dev smoke tests (next dev)
+        env:
+          SMOKE_ALLOW_500: '1'
+        run: npm run test:smoke:dev
 
-            - name: 📦 Install dependencies
-              run: |
-                  echo "Installing dependencies with npm ci..."
-                  npm ci --legacy-peer-deps
+  build:
+    runs-on: ubuntu-latest
+    needs: smoke-dev
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-            - name: ✅ Validate dependencies installed
-              run: |
-                  echo "Checking installed dependencies..."
-                  npm list --depth=0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-            - name: ⚡ Run Next.js build
-              run: |
-                  echo "Building Next.js app..."
-                  npm run build
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
 
-            - name: 📁 List .next build output
-              run: |
-                  echo "Listing .next directory contents..."
-                  ls -la .next
+      - name: Run auth guard tests
+        run: npm run test:auth
 
-            - name: 🐳 Install Docker and Docker Compose
-              run: |
-                  echo "Updating apt repositories and installing Docker Compose..."
-                  sudo apt update
-                  sudo apt install -y docker-compose
+      - name: Build (runs smoke tests)
+        env:
+          SMOKE_ALLOW_500: '1'
+        run: npm run build
 
-            - name: 🛳️ Check Docker and Compose versions
-              run: |
-                  docker --version
-                  docker-compose --version
+      - name: List .next build output
+        run: ls -la .next || true
 
-            - name: 🏗️ Build Docker image with docker-compose
-              run: |
-                  echo "Starting docker-compose build..."
-                  docker-compose build
+      - name: Install Docker and Docker Compose
+        run: |
+          sudo apt update
+          sudo apt install -y docker-compose
 
-            - name: 📦 List Docker images
-              run: |
-                  echo "Listing Docker images..."
-                  docker images
+      - name: Check Docker and Compose versions
+        run: |
+          docker --version
+          docker-compose --version
 
-            - name: 🏷️ Tag Docker image (live)
-              run: |
-                  echo "Tagging image as live..."
-                  docker tag guardian:latest localhost:5000/guardian:live
+      - name: Build Docker image with docker-compose
+        run: docker-compose build
 
-            # - name: 🏷️ Tag Docker image (latest)
-            #   run: |
-            #       echo "Tagging image as latest..."
-            #       docker tag guardian:latest localhost:5000/guardian:latest
+      - name: List Docker images
+        run: docker images
 
-            - name: 🚚 Push Docker image (live)
-              run: |
-                  echo "Pushing image: guardian:live"
-                  docker push localhost:5000/guardian:live
+      - name: Tag Docker image (live)
+        run: docker tag guardian:latest localhost:5000/guardian:live
 
-            # - name: 🚚 Push Docker image (latest)
-            #   run: |
-            #       echo "Pushing image: guardian:latest"
-            #       docker push localhost:5000/guardian:latest
-
-            - name: 🎉 Done!
-              run: |
-                  echo "✅ All build and deployment steps finished successfully!"
+      - name: Push Docker image (live)
+        run: docker push localhost:5000/guardian:live

@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { updateSite, getSiteById } from "@/lib/siteHelper";
+import { requireAdmin } from "@/lib/apiAccess";
 
 export async function POST(request) {
     try {
+        const auth = await requireAdmin();
+        if (!auth.ok)
+            return NextResponse.json(
+                { success: false, error: auth.error },
+                { status: auth.status }
+            );
         const body = await request.json();
         const { site_id, ...updates } = body;
         if (!site_id) {

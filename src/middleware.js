@@ -53,6 +53,15 @@ export async function middleware(req) {
         return NextResponse.next();
     }
 
+    // Test hook: in non-production with TEST_AUTH=1, bypass API auth to allow smoke tests
+    if (
+        process.env.NODE_ENV !== "production" &&
+        process.env.TEST_AUTH === "1" &&
+        pathname.startsWith("/api")
+    ) {
+        return NextResponse.next();
+    }
+
     // Be lenient about origin differences in development to prevent cookie domain thrash
     // Only enforce origin redirect in production when NEXTAUTH_URL is explicitly set
     const expected = process.env.NEXTAUTH_URL;

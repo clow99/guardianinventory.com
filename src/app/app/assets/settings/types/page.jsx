@@ -1,8 +1,11 @@
+"use client";
+import AssetTypes from "@/components/assets/AssetTypes";
+
 export default function TypePage() {
     return (
-        <div>
-            <h1>Asset Types</h1>
-            <p>This is the asset types page.</p>
+        <div className="space-y-4">
+            <h1 className="text-white text-2xl font-bold">Asset Types</h1>
+            <AssetTypes />
         </div>
     );
 }

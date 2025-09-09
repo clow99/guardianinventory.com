@@ -9,6 +9,10 @@ export async function GET(req) {
     try {
         const { searchParams } = new URL(req.url);
         const q = (searchParams.get("q") || "").trim().toLowerCase();
+        const limitParam = Number(searchParams.get("limit"));
+        const offsetParam = Number(searchParams.get("offset"));
+        const sortByParam = (searchParams.get("sortBy") || "").trim();
+        const sortDirParam = (searchParams.get("sortDir") || "").trim().toUpperCase();
         let accountId = Number(searchParams.get("account_id"));
         let source = "query";
         // Prepare auth token (used for fallback resolution and membership checks)
@@ -113,36 +117,68 @@ export async function GET(req) {
             }
         }
 
-        let products = await getAllProducts({ account_id: accountId });
+        // Server-side filtering + pagination + sorting
+        const whereParts = ["p.deleted_at IS NULL", "p.account_id = ?"]; // account_id required here
+        const values = [accountId];
         if (q) {
-            const fields = [
-                "product_name",
-                "product_description",
-                "category_name",
-                "manufacturer_name",
-                "supplier_name",
-            ];
-            const norm = (v) => (typeof v === "string" ? v.toLowerCase() : "");
-            products = products.filter((p) =>
-                fields.some((f) => norm(p[f]).includes(q))
+            whereParts.push(
+                "(LOWER(p.product_name) LIKE ? OR LOWER(p.product_description) LIKE ? OR LOWER(c.category_name) LIKE ? OR LOWER(m.manufacturer_name) LIKE ? OR LOWER(s.supplier_name) LIKE ?)"
             );
+            const w = `%${q}%`;
+            values.push(w, w, w, w, w);
         }
-        // Optional server-side debug to verify account routing during dev
+        const whereSql = `WHERE ${whereParts.join(" AND ")}`;
+
+        const allowedSort = {
+            product_name: "p.product_name",
+            updated_at: "p.updated_at",
+            category_name: "c.category_name",
+            manufacturer_name: "m.manufacturer_name",
+            supplier_name: "s.supplier_name",
+        };
+        const sortCol = allowedSort[sortByParam] || "p.updated_at";
+        const sortDir = sortDirParam === "ASC" ? "ASC" : "DESC";
+        const limit = Number.isFinite(limitParam) && limitParam > 0 ? Math.min(limitParam, 200) : 0; // 0 => no limit
+        const offset = Number.isFinite(offsetParam) && offsetParam >= 0 ? offsetParam : 0;
+
+        // Total count
+        const countRows = await excuteQuery({
+            query: `
+                SELECT COUNT(*) AS total
+                FROM products p
+                LEFT JOIN categories c ON p.category_id = c.category_id
+                LEFT JOIN manufacturers m ON p.manufacturer_id = m.manufacturer_id
+                LEFT JOIN suppliers s ON p.supplier_id = s.supplier_id
+                ${whereSql}
+            `,
+            values,
+        });
+        const total = Number(countRows?.[0]?.total || 0);
+
+        // Paged rows
+        const pageRows = await excuteQuery({
+            query: `
+                SELECT p.*, c.category_name, m.manufacturer_name, s.supplier_name
+                FROM products p
+                LEFT JOIN categories c ON p.category_id = c.category_id
+                LEFT JOIN manufacturers m ON p.manufacturer_id = m.manufacturer_id
+                LEFT JOIN suppliers s ON p.supplier_id = s.supplier_id
+                ${whereSql}
+                ORDER BY ${sortCol} ${sortDir}
+                ${limit ? "LIMIT ? OFFSET ?" : ""}
+            `,
+            values: limit ? [...values, limit, offset] : values,
+        });
+
         if (process.env.NODE_ENV !== "production") {
-            console.info(
-                "[products/list] account_id=",
-                accountId,
-                "source=",
-                source,
-                "count=",
-                (products || []).length
-            );
+            console.info("[products/list] account_id=", accountId, "source=", source, "count=", pageRows.length, "total=", total);
         }
+
         const res = NextResponse.json(
             {
                 success: true,
-                data: products || [],
-                meta: { account_id: accountId, source },
+                data: pageRows || [],
+                meta: { account_id: accountId, source, total, limit: limit || null, offset, sortBy: sortByParam || "updated_at", sortDir: sortDir, q },
             },
             { status: 200 }
         );

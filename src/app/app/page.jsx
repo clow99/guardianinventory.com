@@ -1,5 +1,6 @@
-import Image from "next/image";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-    return <div className="text-red-500">test</div>;
+export default function AppIndex() {
+    // Send users to the main dashboard when visiting /app
+    redirect("/app/dashboard");
 }

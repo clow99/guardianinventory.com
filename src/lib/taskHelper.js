@@ -20,7 +20,7 @@ async function getUserNameExpr() {
 /**
  * Get all tasks (optionally by asset, status, or assigned user).
  */
-export async function getAllTasks({ asset_id, status, assigned_user_id } = {}) {
+export async function getAllTasks({ asset_id, status, assigned_user_id, account_id, site_id } = {}) {
     let conditions = ["t.deleted_at IS NULL"];
     let values = [];
     if (asset_id) {
@@ -35,6 +35,14 @@ export async function getAllTasks({ asset_id, status, assigned_user_id } = {}) {
         conditions.push("ata.user_id = ?");
         values.push(assigned_user_id);
     }
+    if (account_id) {
+        conditions.push("p.account_id = ?");
+        values.push(account_id);
+    }
+    if (site_id) {
+        conditions.push("a.site_id = ?");
+        values.push(site_id);
+    }
     const joinAssignee = assigned_user_id
         ? "LEFT JOIN asset_task_assignees ata ON t.id = ata.task_id"
         : "";
@@ -45,6 +53,8 @@ export async function getAllTasks({ asset_id, status, assigned_user_id } = {}) {
             SELECT t.*
             FROM asset_tasks t
             ${joinAssignee}
+            LEFT JOIN assets a ON t.asset_id = a.asset_id
+            LEFT JOIN products p ON a.product_id = p.product_id
             ${where}
         `,
         values,

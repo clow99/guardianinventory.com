@@ -1,8 +1,11 @@
-export default function SettingsPage() {
+"use client";
+import SitesManager from "@/components/settings/SitesManager";
+
+export default function SitesSettingsPage() {
     return (
-        <div>
-            <h1>Settings</h1>
-            <p>This is the settings page.</p>
+        <div className="space-y-4">
+            <h1 className="text-white text-2xl font-bold">Sites</h1>
+            <SitesManager />
         </div>
     );
 }

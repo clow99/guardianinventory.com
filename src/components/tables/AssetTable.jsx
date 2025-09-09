@@ -22,12 +22,14 @@ function useProducts(
     accountId,
     refreshKey,
     onLoadingChange,
-    onMetaChange
+    onMetaChange,
+    { sorting, pageIndex, pageSize }
 ) {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [bump, setBump] = useState(0);
+    const [total, setTotal] = useState(0);
 
     // Nudge the loader whenever accountId changes to guarantee a new request cycle
     useEffect(() => {
@@ -45,6 +47,7 @@ function useProducts(
                     setError("");
                     onLoadingChange && onLoadingChange(false);
                     onMetaChange && onMetaChange(null);
+                    setTotal(0);
                     return;
                 }
                 setLoading(true);
@@ -54,6 +57,16 @@ function useProducts(
                 if (searchQuery) u.searchParams.set("q", searchQuery);
                 u.searchParams.set("t", String(Date.now()));
                 u.searchParams.set("account_id", String(accountId));
+                // server pagination + sorting
+                const limit = Number(pageSize) || 15;
+                const offset = (Number(pageIndex) || 0) * limit;
+                u.searchParams.set("limit", String(limit));
+                u.searchParams.set("offset", String(offset));
+                const s = Array.isArray(sorting) && sorting[0] ? sorting[0] : null;
+                if (s?.id) {
+                    u.searchParams.set("sortBy", String(s.id));
+                    u.searchParams.set("sortDir", s.desc ? "DESC" : "ASC");
+                }
                 const res = await fetch(u.toString(), {
                     cache: "no-store",
                     signal: controller.signal,
@@ -71,6 +84,7 @@ function useProducts(
                     console.debug("/api/products/list meta:", data.meta);
                 }
                 onMetaChange && onMetaChange(data?.meta || null);
+                setTotal(Number(data?.meta?.total) || 0);
                 if (!ignore)
                     setItems(Array.isArray(data.data) ? data.data : []);
             } catch (e) {
@@ -91,7 +105,7 @@ function useProducts(
             ignore = true;
             controller.abort();
         };
-    }, [searchQuery, accountId, refreshKey, bump]);
+    }, [searchQuery, accountId, refreshKey, bump, pageIndex, pageSize, JSON.stringify(sorting)]);
 
     // If hard reload is enabled, skip local listener; otherwise, refetch on event
     useEffect(() => {
@@ -103,7 +117,7 @@ function useProducts(
         return () => window.removeEventListener("account:change", onChange);
     }, []);
 
-    return { items, loading, error };
+    return { items, loading, error, total };
 }
 
 // Lucide-based sortable header
@@ -208,12 +222,13 @@ export default function AssetTable({
 }) {
     const { accountId: hookAccountId } = useAccount();
     const accountId = propAccountId ?? hookAccountId;
-    const { items, loading, error } = useProducts(
+    const { items, loading, error, total } = useProducts(
         searchQuery,
         accountId,
         refreshKey,
         onLoadingChange,
-        onMetaChange
+        onMetaChange,
+        { sorting, pageIndex, pageSize }
     );
     const [sorting, setSorting] = useState([]);
     const [pageIndex, setPageIndex] = useState(0);
@@ -235,10 +250,10 @@ export default function AssetTable({
             }
         },
         getCoreRowModel: getCoreRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        manualPagination: false,
-        pageCount: Math.ceil(items.length / pageSize || 1),
+        // server-side sorting/pagination
+        manualSorting: true,
+        manualPagination: true,
+        pageCount: Math.max(1, Math.ceil((total || 0) / pageSize)),
     });
 
     // Reset pagination when account changes
@@ -258,9 +273,7 @@ export default function AssetTable({
     if (error) {
         return <div className="text-red-400">{error}</div>;
     }
-    if (items.length === 0) {
-        return <div className="text-neutral-400">No products found.</div>;
-    }
+    // Allow empty state with pagination controls to remain visible
 
     return (
         <div

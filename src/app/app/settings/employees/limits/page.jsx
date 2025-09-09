@@ -1,8 +1,11 @@
-export default function SettingsPage() {
+"use client";
+import EmployeeLimits from "@/components/employees/EmployeeLimits";
+
+export default function EmployeeLimitsPage() {
     return (
-        <div>
-            <h1>Settings</h1>
-            <p>This is the settings page.</p>
+        <div className="space-y-4">
+            <h1 className="text-white text-2xl font-bold">Employee Asset Limits</h1>
+            <EmployeeLimits />
         </div>
     );
 }

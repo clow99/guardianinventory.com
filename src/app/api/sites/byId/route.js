@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { getSiteById } from "@/lib/siteHelper";
+import { getAuthContext } from "@/lib/apiAccess";
 
 export async function POST(request) {
     try {
+        const auth = await getAuthContext();
+        if (!auth.ok)
+            return NextResponse.json(
+                { success: false, error: auth.error },
+                { status: auth.status }
+            );
         const body = await request.json();
         const { site_id } = body;
         if (!site_id) {

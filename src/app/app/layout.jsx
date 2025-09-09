@@ -17,6 +17,8 @@ import PermissionsMenu from "@/components/menus/PermissionsMenu";
 import AdminMenu from "@/components/menus/AdminMenu";
 import ProfileMenu from "@/components/menus/ProfileMenu";
 import ProfileDropdown from "@/components/header/ProfileDropdown";
+import InspectionsMenu from "@/components/menus/InspectionsMenu";
+import RepairsMenu from "@/components/menus/RepairsMenu";
 
 import {
     House,
@@ -50,9 +52,9 @@ export default async function RootLayout({ children }) {
             case "calendar":
                 return <CalendarMenu />;
             case "inspections":
-                return <></>; // Placeholder for inspections menu
+                return <InspectionsMenu />; // Minimal inspections menu
             case "repairs":
-                return <></>;
+                return <RepairsMenu />;
             case "permissions":
                 return <PermissionsMenu />;
             case "admin":
@@ -68,7 +70,7 @@ export default async function RootLayout({ children }) {
 
     return (
         <div className="antialiased flex flex-row h-screen w-screen bg-neutral-900 text-neutral-200">
-            <div className="w-[50px] h-screen shrink-0 bg-neutral-800 border-r border-neutral-700 flex flex-col relative z-20">
+            <div className="w-[50px] h-screen shrink-0 bg-neutral-800 border-r border-neutral-700 flex flex-col relative z-40">
                 <div className="h-12 shrink-0 border-b border-neutral-700 flex items-center justify-center">
                     <img src="/guardianLogo.png" className="h-11 w-11" alt="" />
                 </div>

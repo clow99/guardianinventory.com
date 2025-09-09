@@ -35,6 +35,7 @@ const projects = [
         items: [
             { label: "Asset Types", path: "/app/assets/settings/types" },
             { label: "Custom Fields", path: "/app/assets/settings/fields" },
+            { label: "Locations", path: "/app/assets/settings/locations" },
             { label: "Permissions", path: "/app/assets/settings/permissions" },
             {
                 label: "Notifications",
