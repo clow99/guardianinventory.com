@@ -9,8 +9,8 @@
         "lint": "next lint",
         "seed": "node scripts/seed.mjs",
         "test:auth": "node scripts/tests/auth-guards.mjs",
-        "test:smoke": "node scripts/tests/smoke.mjs",
-        "test:smoke:dev": "node scripts/tests/smoke.mjs --dev"
+        "test:smoke": "node scripts/tests/smoke.mjs --run",
+        "test:smoke:dev": "node scripts/tests/smoke.mjs --run --dev"
     },
     "dependencies": {
         "@tanstack/react-table": "^8.21.3",

@@ -4,6 +4,12 @@
 */
 
 import { spawn } from "node:child_process";
+// Guard: disable smoke tests by default unless explicitly enabled
+const __force = process.argv.includes("--run") || process.argv.includes("--force");
+if (!__force && String(process.env.RUN_SMOKE || "0") !== "1") {
+  console.log("Smoke tests disabled (set RUN_SMOKE=1 to enable).");
+  process.exit(0);
+}
 
 const PORT = process.env.PORT || 5055;
 const BASE = `http://127.0.0.1:${PORT}`;
