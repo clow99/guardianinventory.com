@@ -68,9 +68,8 @@ export async function middleware(req) {
     if (process.env.NODE_ENV === "production" && expected) {
         // Safety: never enforce origin if NEXTAUTH_URL points to localhost/127.0.0.1
         // This prevents deployed environments from redirecting users back to a developer machine.
-        const isLocalExpected = /^(https?:\/\/)(localhost|127\.0\.0\.1)(:\d+)?/i.test(
-            expected
-        );
+        const isLocalExpected =
+            /^(https?:\/\/)(localhost|127\.0\.0\.1)(:\d+)?/i.test(expected);
         if (isLocalExpected) {
             return NextResponse.next();
         }
