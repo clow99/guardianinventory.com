@@ -1,23 +1,37 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "Start dev server (port 3000)",
-            "type": "shell",
-            "command": "npm run dev",
-            "args": [],
-            "isBackground": true,
-            "problemMatcher": ["$eslint-stylish"],
-            "group": "build"
-        },
-        {
-            "label": "Start dev server (port 3003)",
-            "type": "shell",
-            "command": "npm run dev -- --port 3003",
-            "args": [],
-            "isBackground": true,
-            "problemMatcher": ["$eslint-stylish"],
-            "group": "build"
-        }
-    ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start dev server (port 3000)",
+			"type": "shell",
+			"command": "npm run dev",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Start dev server (port 3003)",
+			"type": "shell",
+			"command": "npm run dev -- --port 3003",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Smoke test GET / and /app",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$ErrorActionPreference = 'Stop'; $ProgressPreference='SilentlyContinue'; $base = 'http://127.0.0.1:3000'; try { Write-Host 'GET /'; $r1 = Invoke-WebRequest -Uri \"$base/\" -Headers @{ 'Accept' = 'text/html' } -Method GET; Write-Host (\"/ status: {0}\" -f $r1.StatusCode); } catch { Write-Host (\"/ failed: {0}\" -f $_.Exception.Message) }; try { Write-Host 'GET /app'; $r2 = Invoke-WebRequest -Uri \"$base/app\" -Headers @{ 'Accept' = 'text/html' } -Method GET -MaximumRedirection 0 -ErrorAction Stop; Write-Host (\"/app status: {0}\" -f $r2.StatusCode); } catch { if ($_.Exception.Response -ne $null) { $code = $_.Exception.Response.StatusCode.value__; $loc = $_.Exception.Response.Headers['Location']; Write-Host (\"/app redirected: {0} -> {1}\" -f $code, $loc); } else { Write-Host (\"/app failed: {0}\" -f $_.Exception.Message) } }"
+			]
+		}
+	]
 }

@@ -11,16 +11,30 @@ const PUBLIC_PATHS = [
     "/auth/invite",
     "/auth/success",
     "/auth/error",
-]; // Public pages
+]; // Public pages (explicit)
 
 function isPublic(pathname) {
-    return (
-        PUBLIC_PATHS.includes(pathname) ||
+    // Always allow framework/static assets
+    if (
         pathname.startsWith("/_next") ||
-        pathname.startsWith("/api/auth") ||
-        pathname.match(/\.(.*)$/) ||
-        pathname === "/favicon.ico"
-    );
+        pathname === "/favicon.ico" ||
+        pathname.match(/\.(.*)$/)
+    )
+        return true;
+
+    // Allow NextAuth's own endpoints
+    if (pathname.startsWith("/api/auth")) return true;
+
+    // Explicitly allow listed public pages
+    if (PUBLIC_PATHS.includes(pathname)) return true;
+
+    // Make all top-level "main" pages public by default (marketing, docs, etc.)
+    // Keep application and API areas guarded
+    if (!pathname.startsWith("/app") && !pathname.startsWith("/api")) {
+        return true;
+    }
+
+    return false;
 }
 
 export async function middleware(req) {
