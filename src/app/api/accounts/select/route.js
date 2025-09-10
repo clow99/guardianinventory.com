@@ -34,20 +34,27 @@ export async function POST(request) {
             );
         }
 
-        // Optional: verify membership
+        // Verify membership; if admin, auto-create a lightweight membership to enable context switching
         const membership = await excuteQuery({
             query: "SELECT 1 FROM account_users WHERE account_id = ? AND user_id = ? LIMIT 1",
             values: [accId, user.id],
         });
         if (!membership.length) {
-            // Do not create membership implicitly; deny persist
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: "User is not a member of this account",
-                },
-                { status: 403 }
-            );
+            if (session?.user?.is_admin) {
+                // Create membership row if it doesn't exist so we can store last_selected flag
+                await excuteQuery({
+                    query: "INSERT IGNORE INTO account_users (account_id, user_id) VALUES (?, ?)",
+                    values: [accId, user.id],
+                });
+            } else {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        error: "User is not a member of this account",
+                    },
+                    { status: 403 }
+                );
+            }
         }
 
         // Clear previous last_selected flags

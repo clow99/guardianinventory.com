@@ -1,8 +1,9 @@
-export default function SettingsPage() {
+import PermissionPage from "@/components/permissions/PermissionPage";
+
+export default function RolesSettingsPage() {
     return (
-        <div>
-            <h1>Settings</h1>
-            <p>This is the settings page.</p>
+        <div className="h-full pb-[100px]">
+            <PermissionPage />
         </div>
     );
 }

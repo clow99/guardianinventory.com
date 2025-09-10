@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -10,6 +10,15 @@ export default function JoinAccountPage() {
     const [code, setCode] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
+    useEffect(() => {
+        // Prefill code from query string if present
+        try {
+            const sp = new URLSearchParams(window.location.search);
+            const q = sp.get("code");
+            if (q) setCode(q);
+        } catch {}
+    }, []);
 
     const submit = async (e) => {
         e.preventDefault();
@@ -22,7 +31,8 @@ export default function JoinAccountPage() {
                 body: JSON.stringify({ code }),
             });
             const data = await res.json();
-            if (!res.ok || !data?.ok) throw new Error(data?.error || "Join failed");
+            if (!res.ok || !data?.ok)
+                throw new Error(data?.error || "Join failed");
             router.replace("/app");
         } catch (e) {
             setError(e.message);
@@ -35,7 +45,9 @@ export default function JoinAccountPage() {
         <main className="min-h-screen flex items-center justify-center bg-neutral-900 text-white px-4">
             <div className="w-full max-w-md bg-neutral-800 border border-neutral-700 rounded-xl p-6">
                 <h1 className="text-2xl font-bold mb-2">Join your account</h1>
-                <p className="text-neutral-300 mb-4">Enter your invite code to continue.</p>
+                <p className="text-neutral-300 mb-4">
+                    Enter your invite code to continue.
+                </p>
                 <form onSubmit={submit} className="space-y-3">
                     <input
                         className="w-full rounded-lg bg-neutral-900 border border-neutral-700 px-3 py-2"
@@ -44,7 +56,9 @@ export default function JoinAccountPage() {
                         placeholder="Invite code"
                         required
                     />
-                    {error && <div className="text-red-400 text-sm">{error}</div>}
+                    {error && (
+                        <div className="text-red-400 text-sm">{error}</div>
+                    )}
                     <button
                         type="submit"
                         disabled={loading}

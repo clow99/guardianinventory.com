@@ -3,10 +3,14 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev --turbopack --port 3002",
+        "dev": "next dev --turbopack",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint"
+        "lint": "next lint",
+        "seed": "node scripts/seed.mjs",
+        "test:auth": "node scripts/tests/auth-guards.mjs",
+        "test:smoke": "node scripts/tests/smoke.mjs --run",
+        "test:smoke:dev": "node scripts/tests/smoke.mjs --run --dev"
     },
     "dependencies": {
         "@tanstack/react-table": "^8.21.3",
@@ -23,9 +27,9 @@
         "react-dnd-html5-backend": "^16.0.1",
         "react-dom": "19.1.0",
         "react-pdf": "^9.2.1",
-        "react-qr-reader": "^3.0.0-beta-1",
         "recharts": "^3.1.0",
-        "serverless-mysql": "^2.1.0"
+        "serverless-mysql": "^2.1.0",
+        "@yudiel/react-qr-scanner": "^2.0.3"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3",

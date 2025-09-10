@@ -174,8 +174,18 @@ export default function AccountSelect({ label, id, className = "", ...rest }) {
                                         setDropdownOpen(false);
                                         setIsFocused(false);
                                         setAccount(opt.value);
-                                        // update session/cookie
-                                        await setAccountId(Number(opt.value));
+                                        // Persist cookie/localStorage and server last_selected first to avoid race
+                                        try {
+                                            document.cookie = `account_id=${Number(
+                                                opt.value
+                                            )}; path=/; max-age=${
+                                                30 * 24 * 60 * 60
+                                            }`;
+                                            localStorage.setItem(
+                                                "lastAccountId",
+                                                String(opt.value)
+                                            );
+                                        } catch {}
                                         try {
                                             await fetch(
                                                 "/api/accounts/select",
@@ -193,8 +203,11 @@ export default function AccountSelect({ label, id, className = "", ...rest }) {
                                                 }
                                             );
                                         } catch {}
+                                        // update session
+                                        await setAccountId(Number(opt.value));
                                         // Reset site to first site of new account
                                         setSite(opt.sites?.[0]?.name || "");
+                                        // No route refresh needed; client views refetch on accountId change
                                     }}
                                 >
                                     <span className="text-sm font-semibold">

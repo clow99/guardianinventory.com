@@ -24,7 +24,9 @@ function CustomLegend({ payload }) {
                     key={i}
                     className="flex items-center gap-2 text-gray-200 text-sm"
                 >
-                    <span style={{ fontSize: "1.15em" }}>{data[i].icon}</span>
+                    <span style={{ fontSize: "1.15em" }}>
+                        {entry?.payload?.icon}
+                    </span>
                     <span
                         className="inline-block w-3 h-3 rounded-full"
                         style={{ background: entry.color }}
@@ -33,7 +35,7 @@ function CustomLegend({ payload }) {
                         {entry.value}%
                     </span>
                     <span className="ml-1 text-gray-300 font-medium">
-                        {entry.payload.name}
+                        {entry?.payload?.name}
                     </span>
                 </li>
             ))}

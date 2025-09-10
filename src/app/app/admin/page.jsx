@@ -30,6 +30,7 @@ export default function AdminAccountsPage() {
     const [loading, setLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
     const [accounts, setAccounts] = useState([]);
+    const [filter, setFilter] = useState("");
     const [error, setError] = useState("");
     const [newName, setNewName] = useState("");
     const [newDesc, setNewDesc] = useState("");
@@ -37,6 +38,8 @@ export default function AdminAccountsPage() {
     const [sendingTo, setSendingTo] = useState("");
     const [sendEmail, setSendEmail] = useState("");
     const [sendCode, setSendCode] = useState("");
+    const [lastSentCode, setLastSentCode] = useState("");
+    const [copiedKey, setCopiedKey] = useState(""); // ephemeral copy feedback key
     const [recentCodes, setRecentCodes] = useState([]);
     const [codesLoading, setCodesLoading] = useState(false);
     // Accordion state/data per account row
@@ -145,6 +148,8 @@ export default function AdminAccountsPage() {
             const data = await res.json();
             if (!res.ok || data?.ok === false)
                 throw new Error(data?.error || "Unable to send code");
+            // capture last sent code for quick copy/share
+            if (data?.code) setLastSentCode(String(data.code));
             setSendEmail("");
             setSendCode("");
             // refresh recent list
@@ -154,6 +159,31 @@ export default function AdminAccountsPage() {
                 await loadRowCodes(sendingTo);
         } catch (e) {
             setError(e.message);
+        }
+    };
+
+    const copyText = async (text, key = "") => {
+        try {
+            await navigator.clipboard.writeText(String(text));
+            setCopiedKey(key || String(text));
+            setTimeout(() => setCopiedKey(""), 1500);
+        } catch {}
+    };
+
+    const joinLinkForCode = (code) => {
+        try {
+            const origin =
+                typeof window !== "undefined" ? window.location.origin : "";
+            return `${origin.replace(
+                /\/$/,
+                ""
+            )}/auth/join-account?code=${encodeURIComponent(
+                String(code || "")
+            )}`;
+        } catch {
+            return `/auth/join-account?code=${encodeURIComponent(
+                String(code || "")
+            )}`;
         }
     };
 
@@ -197,6 +227,33 @@ export default function AdminAccountsPage() {
         setInvitesOpen((prev) => ({ ...prev, [accountId]: !prev[accountId] }));
         // If opening and nothing loaded yet, fetch
         if (!invitesOpen[accountId]) await loadRowCodes(accountId);
+    };
+
+    const revokeCode = async (id, accountId) => {
+        try {
+            await fetch(`/api/accounts/code/revoke`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id }),
+            });
+            // refresh lists
+            if (accountId) await loadRowCodes(accountId);
+            if (sendingTo) await loadRecentCodes(sendingTo);
+        } catch (e) {
+            setError(e?.message || "Failed to revoke");
+        }
+    };
+
+    const resendCode = async (id) => {
+        try {
+            await fetch(`/api/accounts/code/resend`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id }),
+            });
+        } catch (e) {
+            setError(e?.message || "Failed to resend");
+        }
     };
 
     return (
@@ -245,6 +302,14 @@ export default function AdminAccountsPage() {
             </form>
 
             <div className="border border-neutral-700 rounded-lg overflow-hidden">
+                <div className="p-3 bg-neutral-900 border-b border-neutral-700 flex items-center gap-3">
+                    <input
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                        placeholder="Filter by name, ID, or description"
+                        className="w-full md:w-96 rounded bg-neutral-950 border border-neutral-700 px-3 py-2 text-sm"
+                    />
+                </div>
                 <table className="w-full text-left text-neutral-200">
                     <thead className="bg-neutral-800">
                         <tr>
@@ -266,145 +331,239 @@ export default function AdminAccountsPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {accounts.map((a) => (
-                            <Fragment key={a.account_id}>
-                                <tr className="odd:bg-neutral-900">
-                                    <td className="px-3 py-2 border-b border-neutral-800">
-                                        {a.account_id}
-                                    </td>
-                                    <td className="px-3 py-2 border-b border-neutral-800">
-                                        {a.account_name}
-                                    </td>
-                                    <td className="px-3 py-2 border-b border-neutral-800">
-                                        {a.description || ""}
-                                    </td>
-                                    <td className="px-3 py-2 border-b border-neutral-800">
-                                        {formatTimestamp(a.created_at)}
-                                    </td>
-                                    <td className="px-3 py-2 border-b border-neutral-800 space-x-2">
-                                        <button
-                                            className="text-xs px-2 py-1 rounded bg-neutral-700 hover:bg-neutral-600 text-white"
-                                            onClick={() =>
-                                                toggleInvites(a.account_id)
-                                            }
-                                        >
-                                            {invitesOpen[a.account_id]
-                                                ? "Hide invites"
-                                                : "View invites"}
-                                        </button>
-                                        <button
-                                            className="text-xs px-2 py-1 rounded bg-orange-500/90 hover:bg-orange-500 text-white"
-                                            onClick={() =>
-                                                setSendingTo(a.account_id)
-                                            }
-                                        >
-                                            Send personal code
-                                        </button>
-                                    </td>
-                                </tr>
-                                {invitesOpen[a.account_id] && (
-                                    <tr>
-                                        <td
-                                            className="px-3 py-2 border-b border-neutral-800 bg-neutral-950"
-                                            colSpan={5}
-                                        >
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="text-neutral-300 font-medium">
-                                                    Recent codes
-                                                </div>
-                                                <div className="space-x-2">
-                                                    <button
-                                                        className="text-xs rounded bg-neutral-800 hover:bg-neutral-700 px-2 py-1"
-                                                        onClick={() =>
-                                                            loadRowCodes(
-                                                                a.account_id
-                                                            )
-                                                        }
-                                                    >
-                                                        Refresh
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div className="max-h-64 overflow-auto border border-neutral-800 rounded">
-                                                {invitesLoading[
-                                                    a.account_id
-                                                ] ? (
-                                                    <div className="text-neutral-500 text-sm p-3">
-                                                        Loading…
-                                                    </div>
-                                                ) : (invitesByAccount[
-                                                      a.account_id
-                                                  ]?.length ?? 0) > 0 ? (
-                                                    <table className="w-full text-sm">
-                                                        <thead className="bg-neutral-800 text-neutral-300">
-                                                            <tr>
-                                                                <th className="px-2 py-1 text-left">
-                                                                    Email
-                                                                </th>
-                                                                <th className="px-2 py-1 text-left">
-                                                                    Code
-                                                                </th>
-                                                                <th className="px-2 py-1 text-left">
-                                                                    Created
-                                                                </th>
-                                                                <th className="px-2 py-1 text-left">
-                                                                    Status
-                                                                </th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {invitesByAccount[
-                                                                a.account_id
-                                                            ]?.map((c) => (
-                                                                <tr
-                                                                    key={c.id}
-                                                                    className="odd:bg-neutral-900"
-                                                                >
-                                                                    <td className="px-2 py-1">
-                                                                        {
-                                                                            c.email
-                                                                        }
-                                                                    </td>
-                                                                    <td className="px-2 py-1 font-mono">
-                                                                        {c.code}
-                                                                    </td>
-                                                                    <td className="px-2 py-1">
-                                                                        {formatTimestamp(
-                                                                            c.created_at
-                                                                        )}
-                                                                    </td>
-                                                                    <td className="px-2 py-1">
-                                                                        {c.used_at ? (
-                                                                            <span
-                                                                                className="text-green-400"
-                                                                                title={formatTimestamp(
-                                                                                    c.used_at
-                                                                                )}
-                                                                            >
-                                                                                Used
-                                                                            </span>
-                                                                        ) : (
-                                                                            <span className="text-yellow-300">
-                                                                                Pending
-                                                                            </span>
-                                                                        )}
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                ) : (
-                                                    <div className="text-neutral-500 text-sm p-3">
-                                                        No codes yet for this
-                                                        account.
-                                                    </div>
-                                                )}
-                                            </div>
+                        {accounts
+                            .filter((a) => {
+                                const q = filter.trim().toLowerCase();
+                                if (!q) return true;
+                                return (
+                                    String(a.account_id).includes(q) ||
+                                    (a.account_name || "")
+                                        .toLowerCase()
+                                        .includes(q) ||
+                                    (a.description || "")
+                                        .toLowerCase()
+                                        .includes(q)
+                                );
+                            })
+                            .map((a) => (
+                                <Fragment key={a.account_id}>
+                                    <tr className="odd:bg-neutral-900">
+                                        <td className="px-3 py-2 border-b border-neutral-800">
+                                            {a.account_id}
+                                        </td>
+                                        <td className="px-3 py-2 border-b border-neutral-800">
+                                            {a.account_name}
+                                        </td>
+                                        <td className="px-3 py-2 border-b border-neutral-800">
+                                            {a.description || ""}
+                                        </td>
+                                        <td className="px-3 py-2 border-b border-neutral-800">
+                                            {formatTimestamp(a.created_at)}
+                                        </td>
+                                        <td className="px-3 py-2 border-b border-neutral-800 space-x-2">
+                                            <button
+                                                className="text-xs px-2 py-1 rounded bg-neutral-700 hover:bg-neutral-600 text-white"
+                                                onClick={() =>
+                                                    toggleInvites(a.account_id)
+                                                }
+                                            >
+                                                {invitesOpen[a.account_id]
+                                                    ? "Hide invites"
+                                                    : "View invites"}
+                                            </button>
+                                            <button
+                                                className="text-xs px-2 py-1 rounded bg-orange-500/90 hover:bg-orange-500 text-white"
+                                                onClick={() =>
+                                                    setSendingTo(a.account_id)
+                                                }
+                                            >
+                                                Send personal code
+                                            </button>
+                                            <button
+                                                className="text-xs px-2 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-white"
+                                                onClick={() =>
+                                                    copyText(
+                                                        String(a.account_id),
+                                                        `acct:${a.account_id}`
+                                                    )
+                                                }
+                                            >
+                                                {copiedKey ===
+                                                `acct:${a.account_id}`
+                                                    ? "Copied"
+                                                    : "Copy ID"}
+                                            </button>
                                         </td>
                                     </tr>
-                                )}
-                            </Fragment>
-                        ))}
+                                    {invitesOpen[a.account_id] && (
+                                        <tr>
+                                            <td
+                                                className="px-3 py-2 border-b border-neutral-800 bg-neutral-950"
+                                                colSpan={5}
+                                            >
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="text-neutral-300 font-medium">
+                                                        Recent codes
+                                                    </div>
+                                                    <div className="space-x-2">
+                                                        <button
+                                                            className="text-xs rounded bg-neutral-800 hover:bg-neutral-700 px-2 py-1"
+                                                            onClick={() =>
+                                                                loadRowCodes(
+                                                                    a.account_id
+                                                                )
+                                                            }
+                                                        >
+                                                            Refresh
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div className="max-h-64 overflow-auto border border-neutral-800 rounded">
+                                                    {invitesLoading[
+                                                        a.account_id
+                                                    ] ? (
+                                                        <div className="text-neutral-500 text-sm p-3">
+                                                            Loading…
+                                                        </div>
+                                                    ) : (invitesByAccount[
+                                                          a.account_id
+                                                      ]?.length ?? 0) > 0 ? (
+                                                        <table className="w-full text-sm">
+                                                            <thead className="bg-neutral-800 text-neutral-300">
+                                                                <tr>
+                                                                    <th className="px-2 py-1 text-left">
+                                                                        Email
+                                                                    </th>
+                                                                    <th className="px-2 py-1 text-left">
+                                                                        Code
+                                                                    </th>
+                                                                    <th className="px-2 py-1 text-left">
+                                                                        Created
+                                                                    </th>
+                                                                    <th className="px-2 py-1 text-left">
+                                                                        Status
+                                                                    </th>
+                                                                    <th className="px-2 py-1 text-left">
+                                                                        Actions
+                                                                    </th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {invitesByAccount[
+                                                                    a.account_id
+                                                                ]?.map((c) => (
+                                                                    <tr
+                                                                        key={
+                                                                            c.id
+                                                                        }
+                                                                        className="odd:bg-neutral-900"
+                                                                    >
+                                                                        <td className="px-2 py-1">
+                                                                            {
+                                                                                c.email
+                                                                            }
+                                                                        </td>
+                                                                        <td className="px-2 py-1 font-mono">
+                                                                            {
+                                                                                c.code
+                                                                            }
+                                                                        </td>
+                                                                        <td className="px-2 py-1">
+                                                                            {formatTimestamp(
+                                                                                c.created_at
+                                                                            )}
+                                                                        </td>
+                                                                        <td className="px-2 py-1">
+                                                                            {c.used_at ? (
+                                                                                <span
+                                                                                    className="text-green-400"
+                                                                                    title={formatTimestamp(
+                                                                                        c.used_at
+                                                                                    )}
+                                                                                >
+                                                                                    Used
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span className="text-yellow-300">
+                                                                                    Pending
+                                                                                </span>
+                                                                            )}
+                                                                        </td>
+                                                                        <td className="px-2 py-1">
+                                                                            <div className="flex gap-2 flex-wrap">
+                                                                                <button
+                                                                                    className="text-xs rounded bg-neutral-800 hover:bg-neutral-700 px-2 py-1"
+                                                                                    onClick={() =>
+                                                                                        copyText(
+                                                                                            c.code,
+                                                                                            `code:${c.id}`
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    {copiedKey ===
+                                                                                    `code:${c.id}`
+                                                                                        ? "Copied"
+                                                                                        : "Copy code"}
+                                                                                </button>
+                                                                                <button
+                                                                                    className="text-xs rounded bg-neutral-800 hover:bg-neutral-700 px-2 py-1"
+                                                                                    onClick={() =>
+                                                                                        copyText(
+                                                                                            joinLinkForCode(
+                                                                                                c.code
+                                                                                            ),
+                                                                                            `link:${c.id}`
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    {copiedKey ===
+                                                                                    `link:${c.id}`
+                                                                                        ? "Copied"
+                                                                                        : "Copy link"}
+                                                                                </button>
+                                                                                {!c.used_at && (
+                                                                                    <>
+                                                                                        <button
+                                                                                            className="text-xs rounded bg-neutral-800 hover:bg-neutral-700 px-2 py-1"
+                                                                                            onClick={() =>
+                                                                                                resendCode(
+                                                                                                    c.id
+                                                                                                )
+                                                                                            }
+                                                                                        >
+                                                                                            Resend
+                                                                                        </button>
+                                                                                        <button
+                                                                                            className="text-xs rounded bg-red-600/80 hover:bg-red-600 px-2 py-1"
+                                                                                            onClick={() =>
+                                                                                                revokeCode(
+                                                                                                    c.id,
+                                                                                                    a.account_id
+                                                                                                )
+                                                                                            }
+                                                                                        >
+                                                                                            Revoke
+                                                                                        </button>
+                                                                                    </>
+                                                                                )}
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    ) : (
+                                                        <div className="text-neutral-500 text-sm p-3">
+                                                            No codes yet for
+                                                            this account.
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </Fragment>
+                            ))}
                     </tbody>
                 </table>
             </div>
@@ -457,6 +616,54 @@ export default function AdminAccountsPage() {
                         link to join.
                     </div>
 
+                    {lastSentCode && (
+                        <div className="rounded border border-neutral-700 bg-neutral-900 p-3 text-sm">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="text-neutral-300">
+                                        Last sent code
+                                    </div>
+                                    <div className="font-mono text-neutral-100">
+                                        {lastSentCode}
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        className="text-xs rounded bg-neutral-800 hover:bg-neutral-700 px-2 py-1"
+                                        onClick={() =>
+                                            copyText(lastSentCode, "last:code")
+                                        }
+                                    >
+                                        {copiedKey === "last:code"
+                                            ? "Copied"
+                                            : "Copy code"}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="text-xs rounded bg-neutral-800 hover:bg-neutral-700 px-2 py-1"
+                                        onClick={() =>
+                                            copyText(
+                                                joinLinkForCode(lastSentCode),
+                                                "last:link"
+                                            )
+                                        }
+                                    >
+                                        {copiedKey === "last:link"
+                                            ? "Copied"
+                                            : "Copy link"}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="mt-2 text-neutral-400">
+                                Share the link:{" "}
+                                <span className="break-all">
+                                    {joinLinkForCode(lastSentCode)}
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="mt-4">
                         <div className="text-neutral-300 font-medium mb-2 flex items-center justify-between">
                             <span>Recent codes</span>
@@ -490,6 +697,9 @@ export default function AdminAccountsPage() {
                                             </th>
                                             <th className="px-2 py-1 text-left">
                                                 Status
+                                            </th>
+                                            <th className="px-2 py-1 text-left">
+                                                Actions
                                             </th>
                                         </tr>
                                     </thead>
@@ -525,6 +735,42 @@ export default function AdminAccountsPage() {
                                                             Pending
                                                         </span>
                                                     )}
+                                                </td>
+                                                <td className="px-2 py-1">
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            type="button"
+                                                            className="text-xs rounded bg-neutral-800 hover:bg-neutral-700 px-2 py-1"
+                                                            onClick={() =>
+                                                                copyText(
+                                                                    c.code,
+                                                                    `modal:code:${c.id}`
+                                                                )
+                                                            }
+                                                        >
+                                                            {copiedKey ===
+                                                            `modal:code:${c.id}`
+                                                                ? "Copied"
+                                                                : "Copy code"}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="text-xs rounded bg-neutral-800 hover:bg-neutral-700 px-2 py-1"
+                                                            onClick={() =>
+                                                                copyText(
+                                                                    joinLinkForCode(
+                                                                        c.code
+                                                                    ),
+                                                                    `modal:link:${c.id}`
+                                                                )
+                                                            }
+                                                        >
+                                                            {copiedKey ===
+                                                            `modal:link:${c.id}`
+                                                                ? "Copied"
+                                                                : "Copy link"}
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}

@@ -1,7 +1,7 @@
 import excuteQuery from "./db";
 
 // Helper to get current user info
-export default async function getUserDetails({ user_id = null, email = null }) {
+export async function getUserDetails({ user_id = null, email = null }) {
     if (!user_id && !email) {
         throw new Error("user_id or email is required");
     }
@@ -35,13 +35,15 @@ export default async function getUserDetails({ user_id = null, email = null }) {
     });
 
     // 3. Get all sites for those accounts
-    const accountIds = accounts.map(acc => acc.account_id);
+    const accountIds = accounts.map((acc) => acc.account_id);
     let sites = [];
     if (accountIds.length > 0) {
         sites = await excuteQuery({
             query: `
                 SELECT * FROM sites
-                WHERE account_id IN (${accountIds.map(() => "?").join(",")}) AND deleted_at IS NULL
+                WHERE account_id IN (${accountIds
+                    .map(() => "?")
+                    .join(",")}) AND deleted_at IS NULL
             `,
             values: accountIds,
         });
@@ -85,8 +87,11 @@ export default async function getUserDetails({ user_id = null, email = null }) {
     };
 }
 
-export default async function checkPermission({permission_id, role_id, user_id}) {
+export async function checkPermission({ permission_id, role_id, user_id }) {
     //check if user has permission to access the resource
 
     return true; // or false based on permission check
 }
+
+const miscHelpers = { getUserDetails, checkPermission };
+export default miscHelpers;

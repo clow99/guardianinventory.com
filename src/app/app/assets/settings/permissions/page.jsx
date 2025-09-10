@@ -1,8 +1,11 @@
+"use client";
+import PermissionPage from "@/components/permissions/PermissionPage";
+
 export default function PermissionsPage() {
     return (
-        <div>
-            <h1>Permissions</h1>
-            <p>This is the permissions page.</p>
+        <div className="space-y-4">
+            <h1 className="text-white text-2xl font-bold">Permissions</h1>
+            <PermissionPage />
         </div>
     );
 }

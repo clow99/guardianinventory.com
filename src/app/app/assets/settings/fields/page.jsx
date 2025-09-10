@@ -1,8 +1,11 @@
-export default function CustomFieldsPage() {
+"use client";
+import AssetFieldsManager from "@/components/assets/AssetFieldsManager";
+
+export default function AssetCustomFieldsPage() {
     return (
-        <div>
-            <h1>Custom Fields</h1>
-            <p>This is the custom fields page.</p>
+        <div className="space-y-4">
+            <h1 className="text-white text-2xl font-bold">Asset Custom Fields</h1>
+            <AssetFieldsManager />
         </div>
     );
 }
