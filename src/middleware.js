@@ -26,9 +26,14 @@ function isPublic(pathname) {
 export async function middleware(req) {
     const { pathname } = req.nextUrl;
     const accept = req.headers.get("accept") || "";
-    const isHttps =
-        (process.env.NEXTAUTH_URL || "").startsWith("https://") ||
-        !!process.env.VERCEL;
+    // Determine scheme/host as seen by the client, accounting for reverse proxies
+    const forwardedProto = req.headers.get("x-forwarded-proto");
+    const forwardedHost =
+        req.headers.get("x-forwarded-host") || req.headers.get("host");
+    const effectiveProto =
+        forwardedProto || req.nextUrl.protocol.replace(":", "");
+    const effectiveHost = forwardedHost || req.nextUrl.host;
+    const effectiveOrigin = `${effectiveProto}://${effectiveHost}`;
     // Support both cookie names to be safe across envs
     const cookieNames = [
         "next-auth.session-token",
@@ -66,10 +71,17 @@ export async function middleware(req) {
     // Only enforce origin redirect in production when NEXTAUTH_URL is explicitly set
     const expected = process.env.NEXTAUTH_URL;
     if (process.env.NODE_ENV === "production" && expected) {
+        // Safety: never enforce origin if NEXTAUTH_URL points to localhost/127.0.0.1
+        // This prevents deployed environments from redirecting users back to a developer machine.
+        const isLocalExpected =
+            /^(https?:\/\/)(localhost|127\.0\.0\.1)(:\d+)?/i.test(expected);
+        if (isLocalExpected) {
+            return NextResponse.next();
+        }
         try {
             const expectedUrl = new URL(expected);
-            const currentUrl = new URL(req.url);
-            const sameOrigin = expectedUrl.origin === currentUrl.origin;
+            // Compare against the origin as seen by the client (from proxy headers)
+            const sameOrigin = expectedUrl.origin === effectiveOrigin;
             if (
                 !sameOrigin &&
                 !pathname.startsWith("/_next") &&
@@ -153,7 +165,11 @@ export async function middleware(req) {
         }
         if (!accountId) {
             if (token?.is_admin) {
-                // Let admins through; many client pages fetch by accountId and will show empty state
+                if (pathname !== "/app/admin") {
+                    const url = new URL("/app/admin", req.url);
+                    return NextResponse.redirect(url);
+                }
+                // already on /app/admin, allow access without account
                 return NextResponse.next();
             }
             // If no token/cookie, check DB mapping by email quickly (best-effort)

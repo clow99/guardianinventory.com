@@ -1,5 +1,11 @@
-// QRScannerModal.jsx
-import { Scanner } from "@yudiel/react-qr-scanner";
+"use client";
+
+import dynamic from "next/dynamic";
+// Load the Scanner only on the client to avoid SSR build issues
+const Scanner = dynamic(
+    () => import("@yudiel/react-qr-scanner").then((m) => m.Scanner),
+    { ssr: false }
+);
 
 export default function QRScannerModal({ open, onClose, onScan }) {
     return open ? (
