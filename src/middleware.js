@@ -66,6 +66,14 @@ export async function middleware(req) {
     // Only enforce origin redirect in production when NEXTAUTH_URL is explicitly set
     const expected = process.env.NEXTAUTH_URL;
     if (process.env.NODE_ENV === "production" && expected) {
+        // Safety: never enforce origin if NEXTAUTH_URL points to localhost/127.0.0.1
+        // This prevents deployed environments from redirecting users back to a developer machine.
+        const isLocalExpected = /^(https?:\/\/)(localhost|127\.0\.0\.1)(:\d+)?/i.test(
+            expected
+        );
+        if (isLocalExpected) {
+            return NextResponse.next();
+        }
         try {
             const expectedUrl = new URL(expected);
             const currentUrl = new URL(req.url);
