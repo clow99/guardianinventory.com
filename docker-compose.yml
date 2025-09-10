@@ -7,6 +7,6 @@ services:
         container_name: guardian
         restart: unless-stopped
         ports:
-            - "8020:8000"
+            - "8020:3000"
         volumes:
             - /usr/share/nginx/:/etc/nginx/ssl/:ro
