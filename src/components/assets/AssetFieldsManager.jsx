@@ -86,7 +86,7 @@ export default function AssetFieldsManager() {
         <div className="space-y-3">
             <div className="text-neutral-300 text-sm">
                 Define asset field schema (JSON). Supports keys: key, label, type (text, textarea, number, date, select), required (bool), min/max (number), minLength/maxLength (text), pattern (regex), options (for select), help (helper text under field).
-                Example: {"fields":[{"key":"warranty_exp","label":"Warranty Expiration","type":"date","required":true,"help":"When does the warranty end?"}]}
+                Example: <code className="bg-neutral-900/40 px-1 py-0.5 rounded text-neutral-200">{`{"fields":[{"key":"warranty_exp","label":"Warranty Expiration","type":"date","required":true,"help":"When does the warranty end?"}]}`}</code>
             </div>
             {loading && (
                 <div className="text-neutral-400 text-sm">Loading...</div>
