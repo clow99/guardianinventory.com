@@ -5,7 +5,10 @@ import excuteQuery from "@/lib/db";
 
 export async function getAuthContext() {
     // Test hook: allow tests to short-circuit auth without DB/next-auth
-    if (process.env.TEST_AUTH === "1" && process.env.NODE_ENV !== "production") {
+    if (
+        process.env.TEST_AUTH === "1" &&
+        process.env.NODE_ENV !== "production"
+    ) {
         // Allow per-request overrides via headers to avoid relying on process env between test runs
         // Fallback to process.env when not provided.
         let hdrs = null;
@@ -18,25 +21,46 @@ export async function getAuthContext() {
         const hUserId = get("x-test-user-id");
         const hAccountId = get("x-test-account-id");
 
-        const isAdmin = hIsAdmin !== null
-            ? String(hIsAdmin) === "1"
-            : String(process.env.TEST_IS_ADMIN || "0") === "1";
-        const userId = hUserId !== null
-            ? Number(hUserId)
-            : Number(process.env.TEST_USER_ID || 0) || null;
-        const accountId = hAccountId !== null
-            ? Number(hAccountId)
-            : Number(process.env.TEST_ACCOUNT_ID || 0) || null;
+        const isAdmin =
+            hIsAdmin !== null
+                ? String(hIsAdmin) === "1"
+                : String(process.env.TEST_IS_ADMIN || "0") === "1";
+        const userId =
+            hUserId !== null
+                ? Number(hUserId)
+                : Number(process.env.TEST_USER_ID || 0) || null;
+        const accountId =
+            hAccountId !== null
+                ? Number(hAccountId)
+                : Number(process.env.TEST_ACCOUNT_ID || 0) || null;
 
         if (process.env.NODE_ENV !== "production") {
             // Debug logging to help diagnose test header propagation issues
-            console.warn("[getAuthContext][TEST_AUTH] headers: isAdmin=", hIsAdmin, 
-                "userId=", hUserId, "accountId=", hAccountId);
-            console.warn("[getAuthContext][TEST_AUTH] computed: is_admin=", isAdmin, 
-                "user_id=", userId, "account_id=", accountId);
+            console.warn(
+                "[getAuthContext][TEST_AUTH] headers: isAdmin=",
+                hIsAdmin,
+                "userId=",
+                hUserId,
+                "accountId=",
+                hAccountId
+            );
+            console.warn(
+                "[getAuthContext][TEST_AUTH] computed: is_admin=",
+                isAdmin,
+                "user_id=",
+                userId,
+                "account_id=",
+                accountId
+            );
         }
         if (!userId) return { ok: false, status: 401, error: "Unauthorized" };
-        return { ok: true, user_id: userId, is_admin: isAdmin, account_id: accountId, email: "test@example.com" };
+        return {
+            ok: true,
+            user_id: userId,
+            is_admin: isAdmin,
+            account_id: accountId,
+            email: "test@example.com",
+        };
     }
     const session = await getServerSession(authOptions);
     const email = session?.user?.email || null;

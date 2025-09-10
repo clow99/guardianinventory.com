@@ -6,7 +6,7 @@ import { useAccount } from "@/app/hooks/useAccount";
 
 export default function AssetFieldsManager() {
     const { accountId } = useAccount();
-    const [value, setValue] = useState("{\n  \"fields\": []\n}");
+    const [value, setValue] = useState('{\n  "fields": []\n}');
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
@@ -31,7 +31,7 @@ export default function AssetFieldsManager() {
                     setValue(
                         typeof af === "object"
                             ? JSON.stringify(af, null, 2)
-                            : "{\n  \"fields\": []\n}"
+                            : '{\n  "fields": []\n}'
                     );
             } catch (e) {
                 if (!cancelled) setError(e.message);
@@ -59,7 +59,10 @@ export default function AssetFieldsManager() {
             setSaving(true);
             setError("");
             // Merge into account.custom_fields.asset_fields
-            const body = { account_id: Number(accountId), custom_fields: { asset_fields: parsed } };
+            const body = {
+                account_id: Number(accountId),
+                custom_fields: { asset_fields: parsed },
+            };
             const res = await fetch("/api/accounts/update", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -85,8 +88,11 @@ export default function AssetFieldsManager() {
     return (
         <div className="space-y-3">
             <div className="text-neutral-300 text-sm">
-                Define asset field schema (JSON). Supports keys: key, label, type (text, textarea, number, date, select), required (bool), min/max (number), minLength/maxLength (text), pattern (regex), options (for select), help (helper text under field).
-                Example: <code className="bg-neutral-900/40 px-1 py-0.5 rounded text-neutral-200">{`{"fields":[{"key":"warranty_exp","label":"Warranty Expiration","type":"date","required":true,"help":"When does the warranty end?"}]}`}</code>
+                Define asset field schema (JSON). Supports keys: key, label,
+                type (text, textarea, number, date, select), required (bool),
+                min/max (number), minLength/maxLength (text), pattern (regex),
+                options (for select), help (helper text under field). Example:{" "}
+                <code className="bg-neutral-900/40 px-1 py-0.5 rounded text-neutral-200">{`{"fields":[{"key":"warranty_exp","label":"Warranty Expiration","type":"date","required":true,"help":"When does the warranty end?"}]}`}</code>
             </div>
             {loading && (
                 <div className="text-neutral-400 text-sm">Loading...</div>
@@ -102,7 +108,9 @@ export default function AssetFieldsManager() {
             <div className="flex justify-end">
                 <button
                     className={`rounded px-4 py-2 text-white text-sm ${
-                        parsed ? "bg-orange-500/80 hover:bg-orange-500" : "bg-neutral-700 text-neutral-400 cursor-not-allowed"
+                        parsed
+                            ? "bg-orange-500/80 hover:bg-orange-500"
+                            : "bg-neutral-700 text-neutral-400 cursor-not-allowed"
                     }`}
                     disabled={!parsed || saving}
                     onClick={save}

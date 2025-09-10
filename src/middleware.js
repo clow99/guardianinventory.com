@@ -30,7 +30,8 @@ export async function middleware(req) {
     const forwardedProto = req.headers.get("x-forwarded-proto");
     const forwardedHost =
         req.headers.get("x-forwarded-host") || req.headers.get("host");
-    const effectiveProto = forwardedProto || req.nextUrl.protocol.replace(":", "");
+    const effectiveProto =
+        forwardedProto || req.nextUrl.protocol.replace(":", "");
     const effectiveHost = forwardedHost || req.nextUrl.host;
     const effectiveOrigin = `${effectiveProto}://${effectiveHost}`;
     // Support both cookie names to be safe across envs
