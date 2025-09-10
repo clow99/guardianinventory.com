@@ -26,9 +26,13 @@ function isPublic(pathname) {
 export async function middleware(req) {
     const { pathname } = req.nextUrl;
     const accept = req.headers.get("accept") || "";
-    const isHttps =
-        (process.env.NEXTAUTH_URL || "").startsWith("https://") ||
-        !!process.env.VERCEL;
+    // Determine scheme/host as seen by the client, accounting for reverse proxies
+    const forwardedProto = req.headers.get("x-forwarded-proto");
+    const forwardedHost =
+        req.headers.get("x-forwarded-host") || req.headers.get("host");
+    const effectiveProto = forwardedProto || req.nextUrl.protocol.replace(":", "");
+    const effectiveHost = forwardedHost || req.nextUrl.host;
+    const effectiveOrigin = `${effectiveProto}://${effectiveHost}`;
     // Support both cookie names to be safe across envs
     const cookieNames = [
         "next-auth.session-token",
@@ -75,8 +79,8 @@ export async function middleware(req) {
         }
         try {
             const expectedUrl = new URL(expected);
-            const currentUrl = new URL(req.url);
-            const sameOrigin = expectedUrl.origin === currentUrl.origin;
+            // Compare against the origin as seen by the client (from proxy headers)
+            const sameOrigin = expectedUrl.origin === effectiveOrigin;
             if (
                 !sameOrigin &&
                 !pathname.startsWith("/_next") &&
