@@ -132,8 +132,12 @@ export async function middleware(req) {
         }
         if (!accountId) {
             if (token?.is_admin) {
-                const url = new URL("/app/admin", req.url);
-                return NextResponse.redirect(url);
+                if (pathname !== "/app/admin") {
+                    const url = new URL("/app/admin", req.url);
+                    return NextResponse.redirect(url);
+                }
+                // already on /app/admin, allow access without account
+                return NextResponse.next();
             }
             // If no token/cookie, check DB mapping by email quickly (best-effort)
             // We can't query DB in middleware, so enforce redirect to join screen
