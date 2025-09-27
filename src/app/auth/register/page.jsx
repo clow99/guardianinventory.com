@@ -11,6 +11,7 @@ import {
     EyeOff,
     Loader2,
     Check,
+    Building2,
 } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
@@ -20,6 +21,7 @@ function RegisterInner() {
     const callbackUrl = searchParams?.get("callbackUrl") || "/app";
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
+    const [accountName, setAccountName] = useState("");
     const [password, setPassword] = useState("");
     const [confirm, setConfirm] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -27,6 +29,10 @@ function RegisterInner() {
     const [agree, setAgree] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const selfSignupEnabled =
+        process.env.NEXT_PUBLIC_ENABLE_SELF_SIGNUP === "1" ||
+        (process.env.NEXT_PUBLIC_ENABLE_SELF_SIGNUP !== "0" &&
+            process.env.NODE_ENV !== "production");
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -41,10 +47,19 @@ function RegisterInner() {
         }
         try {
             setLoading(true);
+            const payload = { username, email, password, fullName: username };
+            if (selfSignupEnabled) {
+                const fallbackName =
+                    (username || "").trim() ||
+                    (email || "").split("@")[0] ||
+                    "My";
+                payload.accountName =
+                    accountName.trim() || `${fallbackName}'s Account`;
+            }
             const res = await fetch("/api/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, email, password }),
+                body: JSON.stringify(payload),
             });
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
@@ -196,6 +211,37 @@ function RegisterInner() {
                                 />
                             </div>
                         </motion.div>
+
+                        {/* Account name */}
+                        {selfSignupEnabled && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.09 }}
+                            >
+                                <label
+                                    htmlFor="accountName"
+                                    className="text-neutral-300 mb-1 text-sm font-medium"
+                                >
+                                    Account name
+                                </label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <Building2 className="h-4 w-4 text-neutral-500" />
+                                    </div>
+                                    <input
+                                        id="accountName"
+                                        type="text"
+                                        autoComplete="organization"
+                                        disabled={loading}
+                                        className="w-full rounded-lg pl-10 pr-3 py-2 bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
+                                        placeholder="Acme Services"
+                                        value={accountName}
+                                        onChange={(e) => setAccountName(e.target.value)}
+                                    />
+                                </div>
+                            </motion.div>
+                        )}
 
                         {/* Password */}
                         <motion.div

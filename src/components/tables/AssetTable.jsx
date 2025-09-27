@@ -62,7 +62,8 @@ function useProducts(
                 const offset = (Number(pageIndex) || 0) * limit;
                 u.searchParams.set("limit", String(limit));
                 u.searchParams.set("offset", String(offset));
-                const s = Array.isArray(sorting) && sorting[0] ? sorting[0] : null;
+                const s =
+                    Array.isArray(sorting) && sorting[0] ? sorting[0] : null;
                 if (s?.id) {
                     u.searchParams.set("sortBy", String(s.id));
                     u.searchParams.set("sortDir", s.desc ? "DESC" : "ASC");
@@ -105,7 +106,15 @@ function useProducts(
             ignore = true;
             controller.abort();
         };
-    }, [searchQuery, accountId, refreshKey, bump, pageIndex, pageSize, JSON.stringify(sorting)]);
+    }, [
+        searchQuery,
+        accountId,
+        refreshKey,
+        bump,
+        pageIndex,
+        pageSize,
+        JSON.stringify(sorting),
+    ]);
 
     // If hard reload is enabled, skip local listener; otherwise, refetch on event
     useEffect(() => {
@@ -222,6 +231,12 @@ export default function AssetTable({
 }) {
     const { accountId: hookAccountId } = useAccount();
     const accountId = propAccountId ?? hookAccountId;
+    // Initialize state before passing to hooks to avoid TDZ errors
+    const [sorting, setSorting] = useState([]);
+    const [pageIndex, setPageIndex] = useState(0);
+    const [pageSize, setPageSize] = useState(15);
+    const [expanded, setExpanded] = useState({});
+
     const { items, loading, error, total } = useProducts(
         searchQuery,
         accountId,
@@ -230,10 +245,6 @@ export default function AssetTable({
         onMetaChange,
         { sorting, pageIndex, pageSize }
     );
-    const [sorting, setSorting] = useState([]);
-    const [pageIndex, setPageIndex] = useState(0);
-    const [pageSize, setPageSize] = useState(15);
-    const [expanded, setExpanded] = useState({});
 
     const table = useReactTable({
         data: items,

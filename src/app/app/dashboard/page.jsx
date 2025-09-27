@@ -2,6 +2,8 @@ export const dynamic = "force-dynamic";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { cookies } from "next/headers";
+import excuteQuery from "@/lib/db";
 import {
     Package,
     TrendingUp,
@@ -21,7 +23,34 @@ function pctChange(curr = 0, prev = 0) {
 
 export default async function Home() {
     const session = await getServerSession(authOptions);
-    const account_id = session?.user?.account_id || null;
+    // Prefer session token, but fall back to cookie or DB last_selected for robustness
+    let account_id = session?.user?.account_id ?? null;
+    if (!account_id) {
+        try {
+            const cookieStore = cookies();
+            const c = Number(cookieStore.get("account_id")?.value || 0);
+            if (Number.isFinite(c) && c > 0) account_id = c;
+        } catch {}
+    }
+    if (!account_id && session?.user?.email) {
+        try {
+            const rows = await excuteQuery({
+                query: `
+                    SELECT au.account_id
+                    FROM account_users au
+                    JOIN users u ON u.id = au.user_id
+                    WHERE u.email = ?
+                      AND JSON_EXTRACT(COALESCE(au.custom_fields, '{}'), '$.last_selected') = true
+                    LIMIT 1
+                `,
+                values: [session.user.email],
+            });
+            if (rows && rows[0]?.account_id) {
+                const a = Number(rows[0].account_id);
+                if (Number.isFinite(a) && a > 0) account_id = a;
+            }
+        } catch {}
+    }
 
     if (!account_id) {
         return (
@@ -88,6 +117,54 @@ export default async function Home() {
             icon: CircleCheckBig,
         },
     ];
+
+    const hasBars =
+        Array.isArray(bars) &&
+        bars.some((row) => {
+            const a = Number(row?.seriesA || 0);
+            const b = Number(row?.seriesB || 0);
+            const c = Number(row?.seriesC || 0);
+            return a > 0 || b > 0 || c > 0;
+        });
+    const hasDonut =
+        Array.isArray(donut) && donut.some((d) => Number(d?.value || 0) > 0);
+    const hasLine =
+        Array.isArray(line?.data) &&
+        Array.isArray(line?.series) &&
+        line.data.some((row) =>
+            line.series.some((s) => Number(row?.[s.key] || 0) > 0)
+        );
+    const hasDow =
+        Array.isArray(dow) && dow.some((d) => Number(d?.value || 0) > 0);
+    const hasAnyData = hasBars || hasDonut || hasLine || hasDow;
+
+    if (!hasAnyData) {
+        return (
+            <div className="flex flex-col gap-3">
+                <div className="border border-neutral-700 rounded-lg bg-neutral-800/70 p-6 text-neutral-300">
+                    <h2 className="text-xl font-semibold text-white mb-2">
+                        Nothing to show yet
+                    </h2>
+                    <div className="space-y-2">
+                        <p>
+                            Add assets and tasks for your selected account, or
+                            run
+                            <code className="mx-1 rounded bg-neutral-900 px-1.5 py-0.5 text-orange-400">
+                                npm run seed
+                            </code>
+                            to load a sample dataset.
+                        </p>
+                        <p className="text-neutral-400 text-sm">
+                            Already ran the seeder? Make sure you're viewing the
+                            seeded account. Use the Account selector at the top
+                            of the left sidebar to switch accounts (look for
+                            "Seed Demo Account").
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col gap-3">

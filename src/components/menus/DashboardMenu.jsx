@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 import DateRangeSelector from "../buttons/DateRangeSelector";
 import UserMultiSelect from "../header/UserMultiSelect";
@@ -56,20 +57,24 @@ export default function DashboardMenu() {
             <UserMultiSelect />
             <LocationMultiSelect />
 
-            <button
-                className={`w-full h-[35px] px-2 flex items-center hover:bg-neutral-700 ease-in-out duration-200 gap-3 text-neutral-300 cursor-pointer`}
+            <Link
+                href="/app/dashboard"
+                className="w-full h-[35px] px-2 flex items-center hover:bg-neutral-700 ease-in-out duration-200 gap-3 text-neutral-300 cursor-pointer"
+                aria-label="Go to Inventory Dashboard"
             >
                 <div className="text-neutral-200 text-sm mr-auto">
                     Inventory Dashboard
                 </div>
-            </button>
-            <button
-                className={`w-full h-[35px] px-2 flex items-center hover:bg-neutral-700 ease-in-out duration-200 gap-3 text-neutral-300 cursor-pointer`}
+            </Link>
+            <Link
+                href="/app/tasks"
+                className="w-full h-[35px] px-2 flex items-center hover:bg-neutral-700 ease-in-out duration-200 gap-3 text-neutral-300 cursor-pointer"
+                aria-label="Go to Tasks Dashboard"
             >
                 <div className="text-neutral-200 text-sm mr-auto">
                     Tasks Dashboard
                 </div>
-            </button>
+            </Link>
         </div>
     );
 }

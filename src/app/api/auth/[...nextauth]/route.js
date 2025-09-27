@@ -187,25 +187,60 @@ export const authOptions = {
             }
             // Allow client to update account on the fly: useSession().update({ account_id })
             if (trigger === "update" && session?.account_id !== undefined) {
-                token.account_id = session.account_id;
-                // Best-effort persist of last_selected as a server-side convenience
-                try {
-                    const users = await excuteQuery({
-                        query: "SELECT id FROM users WHERE email = ? LIMIT 1",
-                        values: [token.email],
-                    });
-                    const user = Array.isArray(users) && users[0];
-                    if (user && Number.isFinite(Number(session.account_id))) {
-                        await excuteQuery({
-                            query: `UPDATE account_users SET custom_fields = JSON_SET(COALESCE(custom_fields, '{}'), '$.last_selected', false) WHERE user_id = ?`,
-                            values: [user.id],
+                const requested = Number(session.account_id);
+                if (
+                    Number.isFinite(requested) &&
+                    requested > 0 &&
+                    token?.email
+                ) {
+                    try {
+                        const users = await excuteQuery({
+                            query: "SELECT id FROM users WHERE email = ? LIMIT 1",
+                            values: [token.email],
                         });
-                        await excuteQuery({
-                            query: `UPDATE account_users SET custom_fields = JSON_SET(COALESCE(custom_fields, '{}'), '$.last_selected', true) WHERE user_id = ? AND account_id = ?`,
-                            values: [user.id, Number(session.account_id)],
-                        });
+                        const user = Array.isArray(users) && users[0];
+                        const userId = user ? Number(user.id) : null;
+
+                        let isMember = false;
+                        if (userId) {
+                            const membership = await excuteQuery({
+                                query: `
+                                    SELECT 1
+                                    FROM account_users
+                                    WHERE user_id = ? AND account_id = ?
+                                    LIMIT 1
+                                `,
+                                values: [userId, requested],
+                            });
+                            isMember = Array.isArray(membership) && membership[0];
+                        }
+
+                        if (isMember || token?.is_admin) {
+                            token.account_id = requested;
+                            if (isMember) {
+                                // Persist last_selected marker for genuine members
+                                await excuteQuery({
+                                    query: `UPDATE account_users SET custom_fields = JSON_SET(COALESCE(custom_fields, '{}'), '$.last_selected', false) WHERE user_id = ?`,
+                                    values: [userId],
+                                });
+                                await excuteQuery({
+                                    query: `UPDATE account_users SET custom_fields = JSON_SET(COALESCE(custom_fields, '{}'), '$.last_selected', true) WHERE user_id = ? AND account_id = ?`,
+                                    values: [userId, requested],
+                                });
+                            }
+                        } else {
+                            console.warn(
+                                "[auth][jwt] blocked account switch for non-member",
+                                { email: token.email, requested }
+                            );
+                        }
+                    } catch (e) {
+                        console.warn(
+                            "[auth][jwt] account switch failed:",
+                            e?.message || e
+                        );
                     }
-                } catch {}
+                }
             }
             return token;
         },
