@@ -172,10 +172,15 @@ export async function middleware(req) {
         // Note: join-account lives under /auth, so it isn't matched here.
         // If no account but admin, route to admin console instead of join screen
         // Resolve account context: token.account_id or cookie account_id or DB mapping
-        let accountId = token?.account_id || null;
-        if (!accountId) {
-            const accCookie = req.cookies.get("account_id")?.value;
-            if (accCookie) accountId = Number(accCookie);
+        let accountId = Number(token?.account_id);
+        if (!Number.isFinite(accountId) || accountId <= 0) {
+            accountId = null;
+        }
+        if (!accountId && token?.is_admin) {
+            const accCookie = Number(req.cookies.get("account_id")?.value);
+            if (Number.isFinite(accCookie) && accCookie > 0) {
+                accountId = accCookie;
+            }
         }
         if (!accountId) {
             if (token?.is_admin) {

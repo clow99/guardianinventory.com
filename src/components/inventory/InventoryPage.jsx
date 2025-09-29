@@ -7,6 +7,7 @@ import AssetGrid from "@/components/grids/AssetGrid";
 import { useAccount } from "@/app/hooks/useAccount";
 import SearchBar from "@/components/inputs/SearchInput";
 import AddProductModal from "../modals/products/AddProductModal";
+import AddLocationModal from "../modals/locations/AddLocationModal";
 import AddAssetModal from "@/components/modals/assets/AddAssetModal";
 import { Download } from "lucide-react";
 
@@ -95,7 +96,12 @@ export default function InventoryPage() {
                         >
                             <Download className="w-4 h-4" /> Export CSV
                         </button>
-                        <AddAssetModal onAdded={() => setRefreshKey((k) => k + 1)} />
+                        <AddLocationModal
+                            onAdded={() => setRefreshKey((k) => k + 1)}
+                        />
+                        <AddAssetModal
+                            onAdded={() => setRefreshKey((k) => k + 1)}
+                        />
                         <AddProductModal
                             initialProductName={searchQuery}
                             onAdded={() => setRefreshKey((k) => k + 1)}
