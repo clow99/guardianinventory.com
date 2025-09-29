@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { SessionProvider } from "next-auth/react";
 import { startSessionHeartbeat, stopSessionHeartbeat } from "@/lib/authClient";
+import UmamiRouteTracker from "@/components/analytics/UmamiRouteTracker";
 
 export default function SessionWrapperClient({ children, session = null }) {
     useEffect(() => {
@@ -45,6 +46,7 @@ export default function SessionWrapperClient({ children, session = null }) {
             refetchOnWindowFocus={true}
             refetchInterval={5 * 60} // 5 minutes
         >
+            <UmamiRouteTracker />
             {children}
         </SessionProvider>
     );

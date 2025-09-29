@@ -5,6 +5,7 @@ import Modal from "@/components/modals/Modal";
 import AnimatedInput from "@/components/inputs/AnimatedInput";
 import AnimatedSelect from "@/components/inputs/AnimatedSelect";
 import AnimatedTextarea from "@/components/inputs/AnimatedTextarea";
+import { trackEvent, trackError } from "@/lib/analytics";
 
 export default function AssetDetailDrawer({ assetId, accountId, onClose, onUpdated }) {
     const [loading, setLoading] = useState(false);
@@ -50,12 +51,21 @@ export default function AssetDetailDrawer({ assetId, accountId, onClose, onUpdat
                         assigned_to: assetJson.data?.assigned_employee_id ? String(assetJson.data.assigned_employee_id) : "",
                         custom_fields: typeof assetJson.data?.custom_fields === "object" ? assetJson.data.custom_fields : {},
                     });
+                    trackEvent("asset_detail_opened", {
+                        assetId,
+                        accountId,
+                        hasFiles: Array.isArray(assetJson?.data?.files) && assetJson.data.files.length > 0,
+                    });
                 } else {
                     setError(assetJson?.error || "Failed to load asset");
+                    trackError("asset_detail_load_failed", { assetId, message: assetJson?.error || "unknown" });
                 }
                 if (histRes.ok && histJson?.success) setHistory(histJson.data || []);
             } catch (e) {
-                if (!cancelled) setError(e.message);
+                if (!cancelled) {
+                    setError(e.message);
+                    trackError("asset_detail_load_exception", { assetId, message: e.message });
+                }
             } finally {
                 if (!cancelled) setLoading(false);
             }
@@ -63,7 +73,11 @@ export default function AssetDetailDrawer({ assetId, accountId, onClose, onUpdat
                 const res = await fetch(`/api/assets/file/list?asset_id=${assetId}`);
                 const json = await res.json();
                 if (!cancelled && res.ok && json?.success) setAssetFiles(json.data || []);
-            } catch {}
+            } catch (e) {
+                if (!cancelled) {
+                    trackError("asset_file_list_failed", { assetId, message: e.message });
+                }
+            }
         })();
         return () => { cancelled = true; };
     }, [assetId]);
@@ -78,7 +92,11 @@ export default function AssetDetailDrawer({ assetId, accountId, onClose, onUpdat
                 if (!cancelled && res.ok && json?.success) {
                     setEmployees((json.data || []).map((e) => ({ value: String(e.employee_id), label: e.full_name || e.username || e.email })));
                 }
-            } catch {}
+            } catch (e) {
+                if (!cancelled) {
+                    trackError("asset_employee_list_failed", { assetId, message: e.message });
+                }
+            }
         })();
         return () => { cancelled = true; };
     }, []);
@@ -98,7 +116,11 @@ export default function AssetDetailDrawer({ assetId, accountId, onClose, onUpdat
                         if (af && typeof af === "object" && Array.isArray(af.fields)) setSchema(af);
                     }
                 }
-            } catch {}
+            } catch (e) {
+                if (!cancelled) {
+                    trackError("asset_schema_load_failed", { assetId, message: e.message });
+                }
+            }
             try {
                 // fetch tasks for this asset then collect files via byId
                 const res = await fetch("/api/tasks", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ asset_id: Number(assetId) }) });
@@ -117,7 +139,11 @@ export default function AssetDetailDrawer({ assetId, accountId, onClose, onUpdat
                     }
                     if (!cancelled) setTaskFiles(files);
                 }
-            } catch {}
+            } catch (e) {
+                if (!cancelled) {
+                    trackError("asset_task_list_failed", { assetId, message: e.message });
+                }
+            }
         })();
         return () => { cancelled = true; };
     }, [assetId, accountId]);
@@ -171,8 +197,15 @@ export default function AssetDetailDrawer({ assetId, accountId, onClose, onUpdat
             setAsset(json.data);
             onUpdated && onUpdated(json.data);
             setEditing(false);
+            trackEvent("asset_quick_edit_saved", {
+                assetId,
+                siteId: payload.site_id ?? null,
+                locationId: payload.location_id ?? null,
+                status: payload.status ?? null,
+            });
         } catch (e) {
             setError(e.message);
+            trackError("asset_quick_edit_failed", { assetId, message: e.message });
         } finally {
             setLoading(false);
         }
@@ -279,7 +312,12 @@ export default function AssetDetailDrawer({ assetId, accountId, onClose, onUpdat
                             <div key={f.id} className="flex items-center justify-between text-sm">
                                 <a className="text-orange-400 hover:text-orange-300 truncate" href={f.file_path} target="_blank" rel="noreferrer">{f.file_name}</a>
                                 <button className="text-xs text-red-400 hover:text-red-300" onClick={async () => {
-                                    await fetch(`/api/assets/file/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: f.id }) });
+                                    const deleteRes = await fetch(`/api/assets/file/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: f.id }) });
+                                    if (deleteRes.ok) {
+                                        trackEvent("asset_file_deleted", { assetId, fileId: f.id });
+                                    } else {
+                                        trackError("asset_file_delete_failed", { assetId, fileId: f.id, status: deleteRes.status });
+                                    }
                                     const res = await fetch(`/api/assets/file/list?asset_id=${assetId}`);
                                     const json = await res.json();
                                     if (res.ok && json?.success) setAssetFiles(json.data || []);
@@ -295,7 +333,13 @@ export default function AssetDetailDrawer({ assetId, accountId, onClose, onUpdat
                         </div>
                         <div className="flex justify-end pt-2">
                             <button className={`rounded px-3 py-1.5 text-sm text-white ${newFileName.trim() && newFilePath.trim() ? 'bg-orange-500/80 hover:bg-orange-500' : 'bg-neutral-700 text-neutral-400 cursor-not-allowed'}`} disabled={!newFileName.trim() || !newFilePath.trim()} onClick={async () => {
-                                await fetch(`/api/assets/file/add`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ asset_id: Number(assetId), file_name: newFileName.trim(), file_path: newFilePath.trim() }) });
+                                const payload = { asset_id: Number(assetId), file_name: newFileName.trim(), file_path: newFilePath.trim() };
+                                const addRes = await fetch(`/api/assets/file/add`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                                if (addRes.ok) {
+                                    trackEvent("asset_file_added", { assetId, fileName: payload.file_name });
+                                } else {
+                                    trackError("asset_file_add_failed", { assetId, status: addRes.status });
+                                }
                                 setNewFileName(''); setNewFilePath('');
                                 const res = await fetch(`/api/assets/file/list?asset_id=${assetId}`);
                                 const json = await res.json();
