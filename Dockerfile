@@ -20,6 +20,8 @@ RUN npm run build
 # Stage 2: Production image with pm2, nginx, and sendmail
 FROM ubuntu:24.04
 
+ARG NODE_MAJOR
+
 # Install Node.js, pm2, nginx, and sendmail
 RUN apt-get update \
     && apt-get install -y --fix-missing curl ca-certificates sendmail \
