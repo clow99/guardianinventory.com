@@ -155,10 +155,10 @@ export default async function Home() {
                             to load a sample dataset.
                         </p>
                         <p className="text-neutral-400 text-sm">
-                            Already ran the seeder? Make sure you're viewing the
-                            seeded account. Use the Account selector at the top
-                            of the left sidebar to switch accounts (look for
-                            "Seed Demo Account").
+                            Already ran the seeder? Make sure you&apos;re
+                            viewing the seeded account. Use the Account selector
+                            at the top of the left sidebar to switch accounts
+                            (look for &quot;Seed Demo Account&quot;).
                         </p>
                     </div>
                 </div>
