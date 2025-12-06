@@ -1,8 +1,11 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { MoveRight } from "lucide-react";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { motion, AnimatePresence } from "framer-motion";
+import { trackEvent } from "@/lib/analytics";
 
 export default function DateRangeSelector({
     label = "Select Date Range",
@@ -20,10 +23,25 @@ export default function DateRangeSelector({
         setArrowKey((k) => k + 1); // trigger arrow animation on date change
     }, [range.start, range.end]);
 
+    function serializeDate(date) {
+        if (!date) return null;
+        if (date instanceof Date && !Number.isNaN(date.getTime())) {
+            return date.toISOString();
+        }
+        if (typeof date === "string") return date;
+        return String(date);
+    }
+
     function handleChange(part, newValue) {
         const updated = { ...range, [part]: newValue };
         setRange(updated);
         onChange?.(updated);
+        trackEvent("date_range_updated", {
+            label,
+            field: part,
+            start: serializeDate(updated.start),
+            end: serializeDate(updated.end),
+        });
     }
 
     return (
