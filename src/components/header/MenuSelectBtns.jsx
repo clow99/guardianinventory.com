@@ -124,6 +124,7 @@ export default function MenuSelectBtns({ initialSelection }) {
     // Persist selection so the server layout can read it on navigation
     Cookies.set("selectedSection", id, { expires: 7, path: "/" });
     setSelected(id);
+    router.refresh();
     if (!href) return;
     try {
         router.push(href);
