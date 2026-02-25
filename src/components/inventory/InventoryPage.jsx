@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { LayoutGrid, Table2 } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AssetTable from "@/components/tables/AssetTable";
 import AssetGrid from "@/components/grids/AssetGrid";
 import { useAccount } from "@/app/hooks/useAccount";
@@ -12,11 +13,17 @@ import AddAssetModal from "@/components/modals/assets/AddAssetModal";
 import { Download } from "lucide-react";
 
 export default function InventoryPage() {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const { accountId } = useAccount();
     const [view, setView] = useState("table"); // "table" or "grid"
     const [searchQuery, setSearchQuery] = useState("");
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [exporting, setExporting] = useState(false);
+    const [exportMessage, setExportMessage] = useState("");
     const [dataMeta, setDataMeta] = useState(null); // { account_id, source }
 
     // When hard reload is enabled, skip local refetch to prevent flicker
@@ -33,13 +40,60 @@ export default function InventoryPage() {
         return () => window.removeEventListener("account:change", onAccChange);
     }, []);
 
-    function exportCsv() {
-        if (!accountId) return;
-        const u = new URL("/api/products/export", window.location.origin);
-        if (searchQuery) u.searchParams.set("q", searchQuery);
-        u.searchParams.set("account_id", String(accountId));
-        // Trigger browser download via navigation
-        window.location.assign(u.toString());
+    useEffect(() => {
+        const urlQ = searchParams?.get("q") || "";
+        setSearchQuery(urlQ);
+    }, [searchParams]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    useEffect(() => {
+        const currentQ = searchParams?.get("q") || "";
+        const nextQ = searchQuery.trim();
+        if (currentQ === nextQ) return;
+        const params = new URLSearchParams(searchParams?.toString() || "");
+        if (nextQ) {
+            params.set("q", nextQ);
+        } else {
+            params.delete("q");
+        }
+        const nextUrl = params.toString()
+            ? `${pathname}?${params.toString()}`
+            : pathname;
+        router.replace(nextUrl, { scroll: false });
+    }, [searchQuery, pathname, router, searchParams]);
+
+    async function exportCsv() {
+        if (!accountId || exporting) return;
+        setExporting(true);
+        setExportMessage("");
+        try {
+            const u = new URL("/api/products/export", window.location.origin);
+            if (debouncedSearchQuery) u.searchParams.set("q", debouncedSearchQuery);
+            u.searchParams.set("account_id", String(accountId));
+            const res = await fetch(u.toString(), { method: "GET" });
+            if (!res.ok) throw new Error("Export failed. Please try again.");
+
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `inventory-export-${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            setExportMessage("Export ready. Download started.");
+        } catch (e) {
+            setExportMessage(e.message || "Export failed. Please try again.");
+        } finally {
+            setExporting(false);
+        }
     }
 
     return (
@@ -80,6 +134,7 @@ export default function InventoryPage() {
                     <SearchBar
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search products or assets..."
                     />
                     <div className="flex items-center gap-3">
                         {loading && (
@@ -88,13 +143,20 @@ export default function InventoryPage() {
                                 <span className="text-sm">Refreshing…</span>
                             </div>
                         )}
+                        {!!exportMessage && (
+                            <div className="text-sm text-neutral-400 max-w-[240px] truncate">
+                                {exportMessage}
+                            </div>
+                        )}
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={exportCsv}
+                            disabled={!accountId || exporting}
                             className="flex items-center gap-2 h-10 px-3 rounded border border-neutral-700 bg-neutral-800 text-neutral-200 text-sm hover:border-orange-500"
                         >
-                            <Download className="w-4 h-4" /> Export CSV
+                            <Download className="w-4 h-4" />
+                            {exporting ? "Exporting..." : "Export CSV"}
                         </button>
                         <AddLocationModal
                             onAdded={() => setRefreshKey((k) => k + 1)}
@@ -112,7 +174,7 @@ export default function InventoryPage() {
             <div className="h-full">
                 {view === "table" ? (
                     <AssetTable
-                        searchQuery={searchQuery}
+                        searchQuery={debouncedSearchQuery}
                         refreshKey={refreshKey}
                         accountId={accountId}
                         onLoadingChange={setLoading}
@@ -120,7 +182,7 @@ export default function InventoryPage() {
                     />
                 ) : (
                     <AssetGrid
-                        searchQuery={searchQuery}
+                        searchQuery={debouncedSearchQuery}
                         refreshKey={refreshKey}
                         accountId={accountId}
                         onLoadingChange={setLoading}

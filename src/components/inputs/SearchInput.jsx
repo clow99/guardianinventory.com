@@ -1,42 +1,15 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useRef } from "react";
 import { Search } from "lucide-react";
 
-const suggestions = [
-    "Apple",
-    "Banana",
-    "Cherry",
-    "Date",
-    "Elderberry",
-    // …your real data here
-];
-
-export default function SearchBar() {
-    const [query, setQuery] = useState("");
-    const [isOpen, setIsOpen] = useState(false);
+export default function SearchBar({
+    value = "",
+    onChange,
+    placeholder = "Search...",
+    onKeyDown,
+}) {
     const containerRef = useRef(null);
-
-    // Close dropdown when clicking outside
-    useEffect(() => {
-        function handleClickOutside(e) {
-            if (
-                containerRef.current &&
-                !containerRef.current.contains(e.target)
-            ) {
-                setIsOpen(false);
-            }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () =>
-            document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
-    // Filter suggestions
-    const filtered = suggestions.filter((item) =>
-        item.toLowerCase().includes(query.toLowerCase())
-    );
 
     return (
         <div ref={containerRef} className="relative">
@@ -46,12 +19,13 @@ export default function SearchBar() {
                 </div>
                 <input
                     type="text"
-                    className="w-full h-full pl-10 text-sm pr-4 text-neutral-200 focus:outline-none"
-                    placeholder="Search..."
+                    className="w-full h-full pl-10 text-sm pr-4 text-neutral-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/70 rounded"
+                    placeholder={placeholder}
                     autoComplete="off"
                     spellCheck="false"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    value={value}
+                    onChange={onChange}
+                    onKeyDown={onKeyDown}
                 />
             </div>
         </div>

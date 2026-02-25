@@ -2,44 +2,34 @@
 
 import { useState, useEffect } from "react";
 import {
-    FolderKanban,
-    Settings,
+    CircleUser,
     ChevronRight,
-    PackageCheck,
     LayoutPanelLeft,
-    Users,
-    FileCog,
+    Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
-// Top-level menu items (customize as needed)
 const topLevelMenus = [
     { path: "/app/profile/view", label: "Overview", icon: LayoutPanelLeft },
 ];
 
-// Folder projects config with route mapping for sub-items
 const projects = [
     {
-        icon: FolderKanban,
-        folder: "Manage Assets",
+        icon: CircleUser,
+        folder: "Profile",
         items: [
-            { label: "Assign Assets", path: "/app/assets/manage/assign" },
-            { label: "Move Assets", path: "/app/assets/manage/move" },
+            { label: "Profile Details", path: "/app/profile/view" },
         ],
     },
     {
-        icon: FileCog,
-        folder: "Assets Settings",
+        icon: Settings,
+        folder: "Account Settings",
         items: [
-            { label: "Asset Types", path: "/app/assets/settings/types" },
-            { label: "Custom Fields", path: "/app/assets/settings/fields" },
-            { label: "Permissions", path: "/app/assets/settings/permissions" },
-            {
-                label: "Notifications",
-                path: "/app/assets/settings/notifications",
-            },
+            { label: "General", path: "/app/settings/general" },
+            { label: "Appearance", path: "/app/settings/appearance" },
+            { label: "Notifications", path: "/app/settings/notifications" },
         ],
     },
 ];
@@ -54,7 +44,7 @@ const itemVariants = {
     exit: { opacity: 0, x: -10, transition: { duration: 0.15 } },
 };
 
-export default function AssetsMenu() {
+export default function ProfileMenu() {
     const pathname = usePathname();
 
     // Determine active top menu

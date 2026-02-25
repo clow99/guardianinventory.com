@@ -17,6 +17,9 @@ export default function AddAssetModal({ onAdded }) {
     const [products, setProducts] = useState([]);
     const [sites, setSites] = useState([]);
     const [locations, setLocations] = useState([]);
+    const [loadingProducts, setLoadingProducts] = useState(false);
+    const [loadingSites, setLoadingSites] = useState(false);
+    const [loadingLocations, setLoadingLocations] = useState(false);
 
     const [schema, setSchema] = useState({ fields: [] });
     const [fieldErrors, setFieldErrors] = useState({});
@@ -39,6 +42,7 @@ export default function AddAssetModal({ onAdded }) {
             try {
                 // Load products for selected account
                 if (accountId) {
+                    setLoadingProducts(true);
                     const u = new URL("/api/products/list", window.location.origin);
                     u.searchParams.set("account_id", String(accountId));
                     const res = await fetch(u.toString());
@@ -48,8 +52,11 @@ export default function AddAssetModal({ onAdded }) {
                         setProducts(opts);
                     }
                 }
-            } catch {}
+            } catch {} finally {
+                if (!cancelled) setLoadingProducts(false);
+            }
             try {
+                setLoadingSites(true);
                 const res = await fetch("/api/sites", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -59,14 +66,19 @@ export default function AddAssetModal({ onAdded }) {
                 if (!cancelled && json?.success) {
                     setSites((json.data || []).map((s) => ({ value: String(s.site_id), label: s.site_name || `Site #${s.site_id}` })));
                 }
-            } catch {}
+            } catch {} finally {
+                if (!cancelled) setLoadingSites(false);
+            }
             try {
+                setLoadingLocations(true);
                 const res = await fetch("/api/locations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ activeOnly: true }) });
                 const json = await res.json();
                 if (!cancelled && json?.success) {
                     setLocations((json.data || []).map((l) => ({ value: String(l.location_id), label: l.location_name })));
                 }
-            } catch {}
+            } catch {} finally {
+                if (!cancelled) setLoadingLocations(false);
+            }
             try {
                 const res = await fetch("/api/accounts/list");
                 const json = await res.json();
@@ -265,8 +277,10 @@ export default function AddAssetModal({ onAdded }) {
         <>
             <button
                 type="button"
-                className="bg-orange-500/60 text-white rounded px-4 py-2 text-sm hover:bg-orange-500 transition"
-                onClick={() => setOpen(true)}
+                className="bg-orange-500/60 text-white rounded px-4 py-2 text-sm hover:bg-orange-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => accountId && setOpen(true)}
+                disabled={!accountId}
+                title={!accountId ? "Select an account to add assets." : "Add Asset"}
             >
                 + Add Asset
             </button>
@@ -274,12 +288,22 @@ export default function AddAssetModal({ onAdded }) {
                 <form className="space-y-3" onSubmit={submit}>
                     <h3 className="text-lg font-semibold text-white">Add Asset</h3>
                     {!accountId && (
-                        <div className="text-neutral-400 text-sm">Select an account first.</div>
+                        <div className="text-neutral-400 text-sm">
+                            Select an account from the left sidebar, then reopen this form.
+                        </div>
                     )}
                     <AnimatedSelect
                         label="Product"
                         value={form.product_id}
-                        options={[{ value: "", label: "Select product" }, ...products]}
+                        options={[
+                            {
+                                value: "",
+                                label: loadingProducts
+                                    ? "Loading products..."
+                                    : "Select product",
+                            },
+                            ...products,
+                        ]}
                         onChange={(e) => setField("product_id", e?.target?.value || "")}
                     />
                     <AnimatedInput
@@ -292,13 +316,27 @@ export default function AddAssetModal({ onAdded }) {
                         <AnimatedSelect
                             label="Site"
                             value={form.site_id}
-                            options={[{ value: "", label: "(none)" }, ...sites]}
+                            options={[
+                                {
+                                    value: "",
+                                    label: loadingSites ? "Loading sites..." : "(none)",
+                                },
+                                ...sites,
+                            ]}
                             onChange={(e) => setField("site_id", e?.target?.value || "")}
                         />
                         <AnimatedSelect
                             label="Location"
                             value={form.location_id}
-                            options={[{ value: "", label: "(none)" }, ...locations]}
+                            options={[
+                                {
+                                    value: "",
+                                    label: loadingLocations
+                                        ? "Loading locations..."
+                                        : "(none)",
+                                },
+                                ...locations,
+                            ]}
                             onChange={(e) => setField("location_id", e?.target?.value || "")}
                         />
                     </div>

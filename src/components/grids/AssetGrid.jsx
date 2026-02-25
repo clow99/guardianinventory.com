@@ -104,7 +104,11 @@ export default function AssetGrid({
             ) : error ? (
                 <div className="text-red-400">{error}</div>
             ) : items.length === 0 ? (
-                <div className="text-neutral-400">No products found.</div>
+                <div className="text-neutral-400">
+                    {searchQuery?.trim()
+                        ? `No products match "${searchQuery}".`
+                        : "No products found for this account yet."}
+                </div>
             ) : null}
             {/* GRID */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

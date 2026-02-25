@@ -5,7 +5,12 @@ import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
-export default function Modal({ isOpen, onClose, children }) {
+export default function Modal({
+    isOpen,
+    onClose,
+    children,
+    ariaLabel = "Dialog",
+}) {
     // close on ESC
     useEffect(() => {
         function handleEsc(e) {
@@ -47,11 +52,15 @@ export default function Modal({ isOpen, onClose, children }) {
                             damping: 25,
                         }}
                         onClick={(e) => e.stopPropagation()}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={ariaLabel}
                     >
                         {/* close button */}
                         <button
                             onClick={onClose}
-                            className="absolute top-3 right-3 text-neutral-400 hover:text-white transition"
+                            className="absolute top-3 right-3 text-neutral-400 hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900 rounded"
+                            aria-label="Close dialog"
                         >
                             ✕
                         </button>

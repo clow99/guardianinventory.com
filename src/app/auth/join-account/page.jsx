@@ -46,7 +46,7 @@ export default function JoinAccountPage() {
             <div className="w-full max-w-md bg-neutral-800 border border-neutral-700 rounded-xl p-6">
                 <h1 className="text-2xl font-bold mb-2">Join your account</h1>
                 <p className="text-neutral-300 mb-4">
-                    Enter your invite code to continue.
+                    Enter the invite code from your admin email to connect your profile to an account.
                 </p>
                 <form onSubmit={submit} className="space-y-3">
                     <input
@@ -56,6 +56,9 @@ export default function JoinAccountPage() {
                         placeholder="Invite code"
                         required
                     />
+                    <div className="text-xs text-neutral-400">
+                        Missing a code? Ask your account administrator to send a personal invite code.
+                    </div>
                     {error && (
                         <div className="text-red-400 text-sm">{error}</div>
                     )}
@@ -65,6 +68,13 @@ export default function JoinAccountPage() {
                         className="w-full rounded-lg bg-orange-500/90 hover:bg-orange-500 px-4 py-2 font-semibold disabled:opacity-60"
                     >
                         {loading ? "Joining..." : "Join account"}
+                    </button>
+                    <button
+                        type="button"
+                        className="w-full rounded-lg border border-neutral-700 px-4 py-2 text-neutral-300 hover:bg-neutral-700"
+                        onClick={() => router.replace("/auth/login")}
+                    >
+                        Back to sign in
                     </button>
                 </form>
             </div>

@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import DateRangeSelector from "../buttons/DateRangeSelector";
 import UserMultiSelect from "../header/UserMultiSelect";
 import LocationMultiSelect from "../header/LocationMultiSelect";
 
 export default function DashboardMenu() {
+    const pathname = usePathname();
     const [openFolders, setOpenFolders] = useState({
         "Manage Inspections": true,
         "Inspection Settings": false,
@@ -59,8 +61,15 @@ export default function DashboardMenu() {
 
             <Link
                 href="/app/dashboard"
-                className="w-full h-[35px] px-2 flex items-center hover:bg-neutral-700 ease-in-out duration-200 gap-3 text-neutral-300 cursor-pointer"
+                className={`w-full h-[35px] px-2 flex items-center ease-in-out duration-200 gap-3 cursor-pointer rounded ${
+                    pathname.startsWith("/app/dashboard")
+                        ? "bg-neutral-700 text-orange-500"
+                        : "text-neutral-300 hover:bg-neutral-700"
+                }`}
                 aria-label="Go to Inventory Dashboard"
+                aria-current={
+                    pathname.startsWith("/app/dashboard") ? "page" : undefined
+                }
             >
                 <div className="text-neutral-200 text-sm mr-auto">
                     Inventory Dashboard
@@ -68,8 +77,13 @@ export default function DashboardMenu() {
             </Link>
             <Link
                 href="/app/tasks"
-                className="w-full h-[35px] px-2 flex items-center hover:bg-neutral-700 ease-in-out duration-200 gap-3 text-neutral-300 cursor-pointer"
+                className={`w-full h-[35px] px-2 flex items-center ease-in-out duration-200 gap-3 cursor-pointer rounded ${
+                    pathname.startsWith("/app/tasks")
+                        ? "bg-neutral-700 text-orange-500"
+                        : "text-neutral-300 hover:bg-neutral-700"
+                }`}
                 aria-label="Go to Tasks Dashboard"
+                aria-current={pathname.startsWith("/app/tasks") ? "page" : undefined}
             >
                 <div className="text-neutral-200 text-sm mr-auto">
                     Tasks Dashboard

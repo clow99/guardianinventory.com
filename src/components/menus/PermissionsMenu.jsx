@@ -2,51 +2,45 @@
 
 import { useState, useEffect } from "react";
 import {
-    FolderKanban,
-    Settings,
+    ShieldCheck,
     ChevronRight,
-    PackageCheck,
     LayoutPanelLeft,
-    Users,
-    FileCog,
+    Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
-// Top-level menu items (customize as needed)
 const topLevelMenus = [
     { path: "/app/permissions/view", label: "Overview", icon: LayoutPanelLeft },
 ];
 
-// Folder projects config with route mapping for sub-items
 const projects = [
     {
-        icon: FolderKanban,
+        icon: ShieldCheck,
         folder: "Manage Permissions",
         items: [
             {
-                label: "Assign Permissions",
-                path: "/app/permissions/manage/assign",
+                label: "Permissions Dashboard",
+                path: "/app/permissions/view",
             },
-            { label: "Move Permissions", path: "/app/permissions/manage/move" },
+            {
+                label: "User Permissions",
+                path: "/app/settings/users/permissions",
+            },
         ],
     },
     {
-        icon: FileCog,
+        icon: Settings,
         folder: "Permissions Settings",
         items: [
             {
-                label: "Permission Types",
-                path: "/app/permissions/settings/types",
+                label: "Asset Permissions",
+                path: "/app/assets/settings/permissions",
             },
             {
-                label: "Custom Fields",
-                path: "/app/permissions/settings/fields",
-            },
-            {
-                label: "Permissions",
-                path: "/app/permissions/settings/permissions",
+                label: "Roles",
+                path: "/app/settings/users/roles",
             },
         ],
     },

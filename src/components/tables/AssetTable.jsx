@@ -143,9 +143,10 @@ function SortableHeader({ column, label }) {
 
     return (
         <button
+            type="button"
             onClick={column.getToggleSortingHandler()}
-            className="flex items-center gap-1 group font-semibold w-full text-left cursor-pointer"
-            tabIndex={-1}
+            className="flex items-center gap-1 group font-semibold w-full text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/70 rounded"
+            aria-label={`Sort by ${label}`}
         >
             <span>{label}</span>
             <span>
@@ -303,6 +304,15 @@ export default function AssetTable({
                                         colSpan={header.colSpan}
                                         className="py-2 text-sm px-4 text-left text-neutral-300 font-semibold border-b border-neutral-700 select-none whitespace-nowrap sticky top-0 z-10"
                                         style={{ minWidth: 110 }}
+                                        scope="col"
+                                        aria-sort={
+                                            header.column.getIsSorted() === "asc"
+                                                ? "ascending"
+                                                : header.column.getIsSorted() ===
+                                                  "desc"
+                                                ? "descending"
+                                                : "none"
+                                        }
                                     >
                                         {header.isPlaceholder
                                             ? null
@@ -516,9 +526,24 @@ export default function AssetTable({
                                     </React.Fragment>
                                 );
                             })}
+                            {table.getRowModel().rows.length === 0 && (
+                                <tr>
+                                    <td
+                                        colSpan={columns.length + 1}
+                                        className="py-8 px-4 text-center text-neutral-400"
+                                    >
+                                        {searchQuery?.trim()
+                                            ? `No products match "${searchQuery}".`
+                                            : "No products found for this account yet."}
+                                    </td>
+                                </tr>
+                            )}
                             {Array.from({
                                 length:
-                                    pageSize - table.getRowModel().rows.length,
+                                    Math.max(
+                                        0,
+                                        pageSize - table.getRowModel().rows.length
+                                    ),
                             }).map((_, i) => (
                                 <tr
                                     key={`empty-${i}`}

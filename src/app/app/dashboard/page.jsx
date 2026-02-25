@@ -56,7 +56,7 @@ export default async function Home() {
         return (
             <div className="flex flex-col gap-3">
                 <div className="text-neutral-300">
-                    Select an account to view dashboard data.
+                    Select an account from the left sidebar to view your dashboard.
                 </div>
             </div>
         );
@@ -147,18 +147,12 @@ export default async function Home() {
                     </h2>
                     <div className="space-y-2">
                         <p>
-                            Add assets and tasks for your selected account, or
-                            run
-                            <code className="mx-1 rounded bg-neutral-900 px-1.5 py-0.5 text-orange-400">
-                                npm run seed
-                            </code>
-                            to load a sample dataset.
+                            Add your first assets and tasks to start seeing trends.
                         </p>
                         <p className="text-neutral-400 text-sm">
-                            Already ran the seeder? Make sure you're viewing the
-                            seeded account. Use the Account selector at the top
-                            of the left sidebar to switch accounts (look for
-                            "Seed Demo Account").
+                            Quick start: go to Inventory to add products and assets,
+                            then create tasks from the Tasks view. Return here to
+                            track activity over time.
                         </p>
                     </div>
                 </div>
@@ -168,14 +162,14 @@ export default async function Home() {
 
     return (
         <div className="flex flex-col gap-3">
-            <div className="flex flex-row gap-3">
+            <div className="flex flex-wrap gap-3">
                 {cards.map((c, idx) => {
                     const Icon = c.icon;
                     const ChangeIcon = c.up ? TrendingUp : TrendingDown;
                     return (
                         <div
                             key={idx}
-                            className="flex flex-col border border-neutral-700 p-3 min-w-[225px] rounded h-[80px]"
+                            className="flex flex-col border border-neutral-700 p-3 min-w-[225px] flex-1 rounded h-[80px]"
                         >
                             <div className="flex flex-row items-center">
                                 <Icon className="text-neutral-400 h-4" />
@@ -207,7 +201,7 @@ export default async function Home() {
                         </div>
                     );
                 })}
-                <button className="ml-auto group flex h-fit flex-col border gap-1 border-neutral-700 p-2 rounded items-center justify-end cursor-pointer hover:border-neutral-600 ease-in-out duration-200 hover:bg-neutral-700">
+                <button className="group flex h-fit flex-col border gap-1 border-neutral-700 p-2 rounded items-center justify-end cursor-pointer hover:border-neutral-600 ease-in-out duration-200 hover:bg-neutral-700">
                     <span className="text-neutral-400 text-sm pl-2">
                         Edit Dashboard
                     </span>
@@ -219,7 +213,7 @@ export default async function Home() {
                     title="Assets vs Tasks (monthly)"
                 />
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <DonutPieChart data={donut} title="Assets by Category" />
                 <AssetLineChart
                     data={line.data}

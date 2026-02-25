@@ -154,6 +154,9 @@ export default function MenuSelectBtns({ initialSelection }) {
         return () => document.removeEventListener("pointerdown", onDocPointerDown);
     }, [moreOpen]);
 
+    const focusRing =
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-800";
+
     return (
         <div className="px-1 py-2 flex flex-col gap-1 h-full">
             <div className="flex flex-col gap-1">
@@ -167,7 +170,8 @@ export default function MenuSelectBtns({ initialSelection }) {
                                 aria-label={opt.label}
                                 onClick={() => handleSelect(opt.id, opt.href)}
                                 className={`relative group w-10 h-10 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition
-                        ${isSelected ? "bg-neutral-700" : "bg-transparent"}`}
+                        ${isSelected ? "bg-neutral-700" : "bg-transparent"} ${focusRing}`}
+                                aria-current={isSelected ? "page" : undefined}
                             >
                                 <Icon
                                     className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200
@@ -202,7 +206,7 @@ export default function MenuSelectBtns({ initialSelection }) {
                                 overflowSelected
                                     ? "bg-neutral-700"
                                     : "bg-transparent"
-                            }`}
+                            } ${focusRing}`}
                         >
                             <MoreVertical
                                 className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200 ${
@@ -256,7 +260,8 @@ export default function MenuSelectBtns({ initialSelection }) {
                             selected === "settings"
                                 ? "bg-neutral-700"
                                 : "bg-transparent"
-                        }`}
+                        } ${focusRing}`}
+                    aria-current={selected === "settings" ? "page" : undefined}
                 >
                     <Settings
                         className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200
@@ -276,7 +281,8 @@ export default function MenuSelectBtns({ initialSelection }) {
                             selected === "profile"
                                 ? "bg-neutral-700"
                                 : "bg-transparent"
-                        }`}
+                        } ${focusRing}`}
+                    aria-current={selected === "profile" ? "page" : undefined}
                 >
                     <CircleUser
                         className={`w-5 h-5 text-neutral-400 group-hover:text-orange-500 ease-in-out duration-200
@@ -286,7 +292,7 @@ export default function MenuSelectBtns({ initialSelection }) {
             </div>
 
             <button
-                className={`relative group w-10 h-10 shrink-0 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition`}
+                className={`relative group w-10 h-10 shrink-0 cursor-pointer flex items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-700 transition ${focusRing}`}
                 type="button"
                 title="Logout"
                 onClick={() => signOut({ callbackUrl: "/" })}
