@@ -98,45 +98,41 @@ export default function InventoryPage() {
 
     return (
         <>
-            <div className="grid grid-cols-2">
-                <h2 className="text-xl font-bold mb-4 text-white">
-                    {view === "table"
-                        ? "Product Assets (Table View)"
-                        : "Product Assets (Grid View)"}
-                </h2>
-                <div className="flex items-center justify-end gap-3 mb-8">
-                    <button
-                        onClick={() => setView("table")}
-                        className={`flex items-center gap-1 px-4 h-10 rounded border transition text-sm cursor-pointer   
-                        ${
-                            view === "table"
-                                ? "bg-neutral-400/20 text-orange-400 border-neutral-500/70"
-                                : "bg-neutral-800 text-neutral-300 border-neutral-700 hover:border-orange-500"
-                        }
-                    `}
-                    >
-                        <Table2 className="w-4 h-4" />
-                        Table
-                    </button>
-                    <button
-                        onClick={() => setView("grid")}
-                        className={`flex items-center gap-1 px-4 h-10 rounded border transition text-sm cursor-pointer 
-                        ${
-                            view === "grid"
-                                ? "bg-neutral-400/20 text-orange-400 border-neutral-500/70"
-                                : "bg-neutral-800 text-neutral-300 border-neutral-700 hover:border-orange-500"
-                        }
-                    `}
-                    >
-                        <LayoutGrid className="w-4 h-4" />
-                        Grid
-                    </button>
-                    <SearchBar
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search products or assets..."
-                    />
-                    <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-3 mb-6">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <h2 className="text-xl font-bold text-white">
+                        {view === "table"
+                            ? "Product Assets (Table View)"
+                            : "Product Assets (Grid View)"}
+                    </h2>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                            onClick={() => setView("table")}
+                            className={`flex items-center gap-1 px-4 h-9 rounded border transition text-sm cursor-pointer ${
+                                view === "table"
+                                    ? "bg-neutral-400/20 text-orange-400 border-neutral-500/70"
+                                    : "bg-neutral-800 text-neutral-300 border-neutral-700 hover:border-orange-500"
+                            }`}
+                        >
+                            <Table2 className="w-4 h-4" />
+                            Table
+                        </button>
+                        <button
+                            onClick={() => setView("grid")}
+                            className={`flex items-center gap-1 px-4 h-9 rounded border transition text-sm cursor-pointer ${
+                                view === "grid"
+                                    ? "bg-neutral-400/20 text-orange-400 border-neutral-500/70"
+                                    : "bg-neutral-800 text-neutral-300 border-neutral-700 hover:border-orange-500"
+                            }`}
+                        >
+                            <LayoutGrid className="w-4 h-4" />
+                            Grid
+                        </button>
+                        <SearchBar
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search products or assets..."
+                        />
                         {loading && (
                             <div className="flex items-center gap-2 text-neutral-400">
                                 <span className="h-4 w-4 rounded-full border-2 border-orange-500 border-t-transparent animate-spin"></span>
@@ -144,16 +140,14 @@ export default function InventoryPage() {
                             </div>
                         )}
                         {!!exportMessage && (
-                            <div className="text-sm text-neutral-400 max-w-[240px] truncate">
+                            <div className="text-sm text-neutral-400 max-w-[200px] truncate">
                                 {exportMessage}
                             </div>
                         )}
-                    </div>
-                    <div className="flex items-center gap-2">
                         <button
                             onClick={exportCsv}
                             disabled={!accountId || exporting}
-                            className="flex items-center gap-2 h-10 px-3 rounded border border-neutral-700 bg-neutral-800 text-neutral-200 text-sm hover:border-orange-500"
+                            className="flex items-center gap-2 h-9 px-3 rounded border border-neutral-700 bg-neutral-800 text-neutral-200 text-sm hover:border-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Download className="w-4 h-4" />
                             {exporting ? "Exporting..." : "Export CSV"}

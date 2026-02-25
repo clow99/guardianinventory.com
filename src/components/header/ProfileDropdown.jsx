@@ -49,7 +49,7 @@ export default function ProfileDropdown() {
         <div ref={ref} className="relative inline-block text-left">
             <button
                 onClick={() => setIsOpen((o) => !o)}
-                className="flex items-center gap-2 bg-transparent hover:bg-neutral-700 px-3 py-2 rounded-full transition"
+                className="flex items-center gap-2 bg-transparent hover:bg-neutral-700 px-3 py-2 rounded-md transition"
                 aria-haspopup="menu"
                 aria-expanded={isOpen}
             >
@@ -80,7 +80,7 @@ export default function ProfileDropdown() {
                             stiffness: 300,
                             damping: 24,
                         }}
-                        className="absolute bottom-full mb-2 right-0 w-56 bg-neutral-800 border border-neutral-700 rounded-md shadow-lg overflow-hidden z-50"
+                        className="absolute top-full mt-2 right-0 w-56 bg-neutral-800 border border-neutral-700 rounded-md shadow-lg overflow-hidden z-50"
                     >
                         <li className="px-4 py-2 border-b border-neutral-700">
                             <div className="text-neutral-200 text-sm font-semibold truncate">
