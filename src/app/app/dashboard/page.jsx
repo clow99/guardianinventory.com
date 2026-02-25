@@ -150,9 +150,16 @@ export default async function Home() {
                             Add your first assets and tasks to start seeing trends.
                         </p>
                         <p className="text-neutral-400 text-sm">
+<<<<<<< HEAD
                             Quick start: go to Inventory to add products and assets,
                             then create tasks from the Tasks view. Return here to
                             track activity over time.
+=======
+                            Already ran the seeder? Make sure you&apos;re
+                            viewing the seeded account. Use the Account selector
+                            at the top of the left sidebar to switch accounts
+                            (look for &quot;Seed Demo Account&quot;).
+>>>>>>> d58bb4fab42d1d1a1a554d78d36c8fbb99a38aa3
                         </p>
                     </div>
                 </div>

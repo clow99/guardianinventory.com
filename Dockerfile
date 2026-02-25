@@ -6,8 +6,9 @@ FROM ubuntu:24.04 AS builder
 # Install Node.js and sendmail
 RUN apt-get update \
     && apt-get install -y --fix-missing curl ca-certificates sendmail \
-    && curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - \
-    && apt-get install -y nodejs npm \
+    && (curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - || echo "NodeSource setup failed; falling back to Ubuntu packages") \
+    && apt-get update \
+    && apt-get install -y --fix-missing nodejs npm \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -25,8 +26,9 @@ ARG NODE_MAJOR
 # Install Node.js, pm2, nginx, and sendmail
 RUN apt-get update \
     && apt-get install -y --fix-missing curl ca-certificates sendmail \
-    && curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - \
-    && apt-get install -y nodejs npm nginx \
+    && (curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - || echo "NodeSource setup failed; falling back to Ubuntu packages") \
+    && apt-get update \
+    && apt-get install -y --fix-missing nodejs npm nginx \
     && npm install -g pm2 \
     && rm -rf /var/lib/apt/lists/*
 
