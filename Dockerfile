@@ -7,7 +7,7 @@ FROM ubuntu:24.04 AS builder
 RUN apt-get update \
     && apt-get install -y --fix-missing curl ca-certificates sendmail \
     && curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - \
-    && apt-get install -y nodejs \
+    && apt-get install -y nodejs npm \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -26,7 +26,7 @@ ARG NODE_MAJOR
 RUN apt-get update \
     && apt-get install -y --fix-missing curl ca-certificates sendmail \
     && curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - \
-    && apt-get install -y nodejs nginx \
+    && apt-get install -y nodejs npm nginx \
     && npm install -g pm2 \
     && rm -rf /var/lib/apt/lists/*
 
