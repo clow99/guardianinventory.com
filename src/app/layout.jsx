@@ -1,6 +1,5 @@
 // app/layout.js
 import "./globals.css";
-import SessionWrapperClient from "@/components/SessionWrapperClient";
 import UmamiAnalytics from "@/components/analytics/UmamiAnalytics";
 
 export default function RootLayout({ children }) {
@@ -16,7 +15,7 @@ export default function RootLayout({ children }) {
             </head>
 
             <body className="antialiased bg-neutral-900 text-neutral-200">
-                <SessionWrapperClient>{children}</SessionWrapperClient>
+                {children}
                 <UmamiAnalytics />
             </body>
         </html>

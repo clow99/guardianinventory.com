@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 
 export default function JoinAccountPage() {
-    const { data: session } = useSession();
     const router = useRouter();
     const [code, setCode] = useState("");
     const [loading, setLoading] = useState(false);
