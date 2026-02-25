@@ -3,6 +3,8 @@ ARG NODE_MAJOR=22
 # Stage 1: Build the Next.js app
 FROM ubuntu:24.04 AS builder
 
+ARG NODE_MAJOR=22
+
 # Install Node.js and sendmail
 RUN apt-get update \
     && apt-get install -y --fix-missing curl ca-certificates sendmail \
