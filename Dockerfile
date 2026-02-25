@@ -1,17 +1,5 @@
-ARG NODE_MAJOR=22
-
 # Stage 1: Build the Next.js app
-FROM ubuntu:24.04 AS builder
-
-ARG NODE_MAJOR=22
-
-# Install Node.js and sendmail
-RUN apt-get update \
-    && apt-get install -y --fix-missing curl ca-certificates sendmail \
-    && (curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - || echo "NodeSource setup failed; falling back to Ubuntu packages") \
-    && apt-get update \
-    && apt-get install -y --fix-missing nodejs \
-    && rm -rf /var/lib/apt/lists/*
+FROM node:22-slim AS builder
 
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -21,24 +9,17 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Production image with pm2, nginx, and sendmail
-FROM ubuntu:24.04
+FROM node:22-slim
 
-ARG NODE_MAJOR=22
-
-# Install Node.js, pm2, nginx, and sendmail
+# Install nginx, sendmail, and pm2
 RUN apt-get update \
-    && apt-get install -y --fix-missing curl ca-certificates sendmail \
-    && (curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - || echo "NodeSource setup failed; falling back to Ubuntu packages") \
-    && apt-get update \
-    && apt-get install -y --fix-missing nodejs nginx \
+    && apt-get install -y --fix-missing nginx sendmail tzdata \
     && npm install -g pm2 \
     && rm -rf /var/lib/apt/lists/*
 
 # Set timezone to America/Toronto
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update \
-    && apt-get install -y --fix-missing tzdata \
-    && ln -snf /usr/share/zoneinfo/America/Toronto /etc/localtime \
+RUN ln -snf /usr/share/zoneinfo/America/Toronto /etc/localtime \
     && echo "America/Toronto" > /etc/timezone \
     && dpkg-reconfigure -f noninteractive tzdata
 
