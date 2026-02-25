@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useMemo, createRef } from "react";
 import { motion } from "framer-motion";
 
 // Utility: get X position/width for indicator
@@ -28,7 +28,10 @@ export default function AnimatedTabs({
     const selectedIdx = options.findIndex((opt) => opt.value === selected);
 
     // Refs for tab elements (to measure indicator position)
-    const tabRefs = options.map(() => useRef(null));
+    const tabRefs = useMemo(
+        () => options.map(() => createRef()),
+        [options]
+    );
     const [indicator, setIndicator] = useState({ left: 0, width: 0 });
 
     // Animate indicator when tab or layout changes
