@@ -1,0 +1,20 @@
+x-json-logging: &json-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  app:
+    container_name: guardian
+    image: 10.0.0.2:5000/guardian:live
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:3005:3000"
+    restart: unless-stopped
+    cpus: "0.50"
+    mem_limit: 768m
+    mem_reservation: 384m
+    pids_limit: 200
+    logging: *json-logging
